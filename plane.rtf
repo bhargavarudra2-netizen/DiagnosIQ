@@ -1,0 +1,372 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2868
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 HelveticaNeue;\f1\fnil\fcharset129 AppleSDGothicNeo-Bold;\f2\fnil\fcharset0 .AppleColorEmojiUI;
+\f3\fnil\fcharset134 .CJKSymbolsFallbackSC-Regular;\f4\fnil\fcharset0 HelveticaNeue-Italic;}
+{\colortbl;\red255\green255\blue255;\red242\green237\blue230;\red0\green0\blue0;\red241\green236\blue230;
+\red28\green28\blue26;\red255\green255\blue255;\red187\green181\blue174;\red223\green225\blue230;}
+{\*\expandedcolortbl;;\cssrgb\c96051\c94470\c92030;\cssrgb\c0\c0\c0;\cssrgb\c95686\c94118\c92157;
+\cssrgb\c14510\c14510\c13725;\cssrgb\c100000\c100000\c100000;\cssrgb\c78039\c76078\c73725;\cssrgb\c89804\c90588\c92157;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat0\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\b\fs24 \cf2 \cb3 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 <p align="center">\
+  <img src="https://img.shields.io/badge/Hackathon-MediNova%202025-0a192f?style=for-the-badge&logo=heart&logoColor=00f5d4" />\
+  <img src="https://img.shields.io/badge/Track-AI%20in%20Healthcare-0a192f?style=for-the-badge&logo=stethoscope&logoColor=00f5d4" />\
+  <img src="https://img.shields.io/badge/Team-AntiGravity-0a192f?style=for-the-badge&logo=rocket&logoColor=00f5d4" />\
+  <img src="https://img.shields.io/badge/Status-In%20Development-0a192f?style=for-the-badge&logo=github&logoColor=ff6b6b" />\
+</p>\
+\
+---\
+\
+<h1 align="center">\
+  
+\f1 \'a2\'c2
+\f0  VITALIS\
+</h1>\
+<h3 align="center">AI Health Risk Intelligence System</h3>\
+<p align="center"><em>MediNova Hackathon \'b7 PS 3: Smart Medical Report Analyzer \'b7 Team AntiGravity</em></p>\
+\
+---\
+\
+> **We are NOT building** an OCR project, a PDF summarizer, a simple chatbot, or a report reader.\
+>\
+> **We ARE building** an AI-powered preventive healthcare intelligence platform that extracts, analyzes, and explains medical risks from diagnostic reports \'97 and presents them through a spatial, visual, and accessible interface that feels like a real clinical product.\
+\
+---\
+\
+## Table of Contents\
+\
+1. [Project Vision](#1-project-vision)\
+2. [Core Differentiators](#2-core-differentiators)\
+3. [Technical Architecture & Stack](#3-technical-architecture--stack)\
+4. [Medical Safety & Logic Engine](#4-medical-safety--logic-engine)\
+5. [UI/UX Design System](#5-uiux-design-system)\
+6. [Execution Roadmap](#6-execution-roadmap)\
+7. [Team AntiGravity](#7-team-antigravity)\
+\
+---\
+\
+## 1. Project Vision\
+\
+### The Problem\
+\
+Every day, millions of patients receive diagnostic reports they cannot understand. The current path is: receive report \uc0\u8594  feel anxious \u8594  wait days for a doctor's appointment \u8594  receive a 4-minute verbal summary. This delay has real consequences in preventive healthcare.\
+\
+### The Vitalis Solution\
+\
+Vitalis transforms raw medical reports (blood tests, lipid panels, thyroid function, etc.) into a **living, interactive health intelligence dashboard**. In under 30 seconds, a patient receives:\
+\
+- A spatial, organ-level visualization of what the report means for their body\
+- Plain-language explanations with AI-determined confidence scores\
+- A trend analysis across historical reports, with projected risk trajectories\
+- An actionable, personalized health plan they can print and act on immediately\
+- Audio readout in their regional language\
+\
+### Strategic Positioning\
+\
+Judges evaluate three things: **startup vision**, **scalability**, and **practical impact**. Vitalis is positioned not as a student hackathon project but as a Series A-ready health intelligence product.\
+\
+| Dimension | Basic Teams | Vitalis |\
+|---|---|---|\
+| Output | Text summary | Interactive 3D spatial dashboard |\
+| Scope | One report | Multi-report trend intelligence |\
+| Accessibility | English only | Vernacular audio (Hindi, Marathi, Tamil) |\
+| Safety | None | Hybrid rule engine with emergency escalation |\
+| Persona | Generic | Patient mode + Doctor mode |\
+| Action | Reads findings | Generates printable action plan |\
+\
+---\
+\
+## 2. Core Differentiators\
+\
+### 2.1 Interactive 3D Human Body Visualizer\
+\
+> **The feature no other team will have.**\
+\
+Built with **React Three Fiber** (Three.js for React), the frontend renders an interactive 3D anatomical body model. When the AI detects organ-specific risk markers, the corresponding organ is dynamically highlighted in a severity color.\
+\
+- Liver enzymes elevated \uc0\u8594  liver glows amber/red\
+- High creatinine \uc0\u8594  kidneys highlighted\
+- Abnormal troponin \uc0\u8594  heart flagged as critical\
+- Low hemoglobin \uc0\u8594  blood system visualization\
+\
+The user can rotate the model, click any highlighted organ to expand findings, and switch between skeletal and organ views. This turns a dry data table into an unforgettable demo moment.\
+\
+**Tech:** `@react-three/fiber`, `@react-three/drei`, GLTF anatomical models, Three.js raycasting for organ click detection.\
+\
+### 2.2 Multi-Report Trend Intelligence\
+\
+Upload up to 5 historical reports. Vitalis extracts timestamped biomarker values and renders a time-series line chart with:\
+\
+- Per-biomarker trend lines (LDL, HbA1c, Hemoglobin, Creatinine, etc.)\
+- A projected trendline showing where values are heading\
+- A color-coded danger threshold line per WHO/ICMR reference ranges\
+- A risk trajectory statement: *"Your LDL has risen 11% over 8 months. At this rate, it crosses the high-risk threshold by Q3 2026."*\
+\
+**Tech:** `Recharts` for charting, linear regression for projection, Claude API for trend narrative generation.\
+\
+### 2.3 AI Confidence Layer\
+\
+Every finding in the dashboard carries a per-finding confidence score derived from OCR quality and AI certainty. Low-confidence findings are flagged with a warning indicator, prompting the user to verify manually. This is architecturally honest and signals clinical maturity to judges.\
+\
+*Example: "LDL: 214 mg/dL \'97 High (AI Confidence: 94%) vs. "Platelet count: unclear \'97 OCR quality low on this value. Please verify manually. (Confidence: 41%)"*\
+\
+### 2.4 Patient \uc0\u8596  Doctor Mode Toggle\
+\
+A single header toggle switches the entire dashboard between two rendering modes using the same underlying JSON:\
+\
+- **Patient Mode:** Plain English, emoji severity indicators (`
+\f2\b0 \uc0\u55357 \u57313 
+\f0\b  Slightly Elevated`), lifestyle tips, relatable analogies\
+- **Doctor Mode:** Clinical terminology, ICD-10 diagnostic hints, standard reference ranges, abbreviated clinical language\
+\
+### 2.5 Vernacular Audio Readout\
+\
+A text-to-speech engine reads the simplified health summary aloud in the user's selected regional language. Supports Hindi, Marathi, Tamil, and Bengali using the Web Speech API with language-specific `SpeechSynthesisUtterance` voices, with fallback to Google Cloud Text-to-Speech for unsupported voices.\
+\
+This makes Vitalis genuinely accessible to rural and semi-literate patients \'97 a strong social impact signal for Indian judges.\
+\
+### 2.6 Location Intelligence: Specialist Finder\
+\
+After analysis, Vitalis maps the nearest top-rated specialists relevant to the specific findings using spatial clustering. A patient with high creatinine sees nephrologists. A patient with elevated liver enzymes sees hepatologists. Powered by **Google Maps API** with Places API for specialist discovery.\
+\
+### 2.7 Printable Action Plan\
+\
+One-click PDF export of a personalized 7-day plan: specific foods, foods to avoid, recommended specialist type, and one primary lifestyle change. Generated by Claude, formatted with `window.print()` + a dedicated print CSS stylesheet. A judge who can physically hold this output remembers the demo.\
+\
+---\
+\
+## 3. Technical Architecture & Stack\
+\
+### 3.1 Full Stack Overview\
+\
+\pard\pardeftab720\partightenfactor0
+
+\b0\fs32 \cf4 \cb5 \strokec4 INPUT: PDF or Image file\
+\uc0\u9474 \
+\uc0\u9660 \
+\uc0\u9484 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9488 \
+\uc0\u9474  File Type Check \u9474 \
+\uc0\u9474  PDF \u8594  pdf2image \u9474 \
+\uc0\u9474  Image \u8594  direct \u9474 \
+\uc0\u9492 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 
+\f3 \'a9\'d0\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'bc
+\f0 \
+\uc0\u9474 \
+\uc0\u9660 \
+\uc0\u9484 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9488 \
+\uc0\u9474  pytesseract OCR \u9474 \
+\uc0\u9474  + confidence score \u9474 \
+\uc0\u9474  per text block \u9474 \
+\uc0\u9492 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 
+\f3 \'a9\'d0\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'bc
+\f0 \
+\uc0\u9474 \
+
+\f3 \'a9\'c0\'a9\'a4\'a9\'a4
+\f0  OCR confidence < 60%? \uc0\u8594  Flag for manual review\
+\uc0\u9474 \
+\uc0\u9660 \
+\uc0\u9484 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9488 \
+\uc0\u9474  Raw text \u8594  Claude \u9474 \
+\uc0\u9474  Master Prompt \u9474 \
+\uc0\u9474  Returns JSON schema \u9474 \
+\uc0\u9492 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 
+\f3 \'a9\'d0\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'bc
+\f0 \
+\uc0\u9474 \
+\uc0\u9660 \
+\uc0\u9484 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9488 \
+\uc0\u9474  Rule Engine passes \u9474 \
+\uc0\u9474  over JSON output \u9474 \
+\uc0\u9474  Triggers alerts if \u9474 \
+\uc0\u9474  thresholds crossed \u9474 \
+\uc0\u9492 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 \u9472 
+\f3 \'a9\'d0\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'a4\'a9\'bc
+\f0 \
+\uc0\u9474 \
+\uc0\u9660 \
+OUTPUT: Validated AnalysisResponse JSON\
+\
+\pard\pardeftab720\partightenfactor0
+
+\fs24 \cf4 \cb5 \strokec4 \
+### 3.6 Claude API Response Schema\
+\
+Every call to Claude returns a single validated JSON object. This schema powers every UI feature:\
+\
+```json\
+\{\
+  "patient_name": "string | null",\
+  "report_date": "ISO 8601 date string",\
+  "report_type": "CBC | Lipid | Thyroid | Metabolic | Other",\
+  "overall_risk": "low | medium | high | critical",\
+  "ocr_confidence": 0.0,\
+  "biomarkers": [\
+    \{\
+      "name": "LDL Cholesterol",\
+      "value": 214,\
+      "unit": "mg/dL",\
+      "normal_range": "< 130",\
+      "status": "high",\
+      "affected_organ": "cardiovascular",\
+      "confidence": 0.94,\
+      "plain_english": "Your bad cholesterol is significantly elevated.",\
+      "clinical_term": "Hypercholesterolaemia",\
+      "icd10_hint": "E78.0"\
+    \}\
+  ],\
+  "summary_patient": "Plain-language, empathetic 3\'964 sentence summary.",\
+  "summary_doctor": "Clinical 3\'964 sentence summary with medical terminology.",\
+  "emergency_flags": [],\
+  "action_plan": \{\
+    "diet": ["Reduce saturated fats", "Increase oat-based foods"],\
+    "lifestyle": ["30 min walking daily", "Reduce stress"],\
+    "specialist": "Cardiologist",\
+    "urgency": "Within 2 weeks"\
+  \},\
+  "trend_data": null\
+\}\
+\
+\
+\pard\pardeftab720\sa360\partightenfactor0
+
+\fs36 \cf6 \cb5 \strokec6 4. Medical Safety & Logic Engine\
+\pard\pardeftab720\sa400\partightenfactor0
+
+\fs32 \cf7 \strokec7 The hybrid rule engine is our real weapon.\'a0It is what separates a responsible health tool from a reckless one \'97 and judges know the difference.\cb1 \
+\pard\pardeftab720\sa180\partightenfactor0
+
+\fs30 \cf6 \cb5 \strokec6 4.1 The Hybrid Architecture\
+\pard\pardeftab720\sa400\partightenfactor0
+
+\fs32 \cf4 \strokec4 The safety system has two layers working in sequence:\
+Layer 1 \'97 Deterministic Rule Engine (Python)\cb1 \uc0\u8232 \cb5 Fast, explicit threshold checks that run on the parsed JSON\'a0
+\f4\i before
+\f0\i0 \'a0it reaches the frontend. No AI ambiguity here \'97 these are hard-coded medical thresholds.\
+\pard\pardeftab720\partightenfactor0
+
+\fs24 \cf4 \cb5 \strokec4 # Example rule definitions\
+EMERGENCY_RULES = \{\
+    "glucose":        \{"critical_high": 500,  "unit": "mg/dL", "condition": "Hyperglycaemic crisis"\},\
+    "troponin":       \{"critical_high": 2.0,  "unit": "ng/mL", "condition": "Possible cardiac event"\},\
+    "haemoglobin":    \{"critical_low": 6.0,   "unit": "g/dL",  "condition": "Severe anaemia"\},\
+    "creatinine":     \{"critical_high": 10.0, "unit": "mg/dL", "condition": "Renal failure risk"\},\
+    "potassium":      \{"critical_high": 6.5,  "unit": "mEq/L", "condition": "Hyperkalaemia \'97 cardiac risk"\},\
+    "sodium":         \{"critical_low": 120,   "unit": "mEq/L", "condition": "Severe hyponatraemia"\},\
+    "ldl":            \{"high": 190,           "unit": "mg/dL", "condition": "Very high cardiovascular risk"\},\
+\}\
+\
+def check_emergency_flags(biomarkers: list) -> list[EmergencyFlag]:\
+    flags = []\
+    for marker in biomarkers:\
+        rule = EMERGENCY_RULES.get(marker.name.lower())\
+        if rule:\
+            if "critical_high" in rule and marker.value > rule["critical_high"]:\
+                flags.append(EmergencyFlag(\
+                    marker=marker.name,\
+                    value=marker.value,\
+                    condition=rule["condition"],\
+                    severity="CRITICAL",\
+                    action="Seek immediate medical attention. Do not wait."\
+                ))\
+    return flags\
+\
+\pard\pardeftab720\sa400\partightenfactor0
+
+\fs32 \cf4 \cb5 \strokec4 Layer 2 \'97 AI Language Guardrails (Prompt-level)\cb1 \uc0\u8232 \cb5 The Claude prompt enforces strict language constraints at the generation level.\
+\pard\pardeftab720\sa180\partightenfactor0
+
+\fs30 \cf6 \strokec6 4.2 Language Constraints\
+\pard\pardeftab720\sa400\partightenfactor0
+
+\fs32 \cf4 \strokec4 These rules are non-negotiable and are enforced both in the system prompt and by post-processing validation.\
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \tamart560 \tamarb560 \trbrdrt\brdrnil \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalb \clshdrawnil \clwWidth3826\clftsWidth3 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt120 \clpadl180 \clpadb120 \clpadr180 \gaph\cellx4320
+\clvertalb \clshdrawnil \clwWidth12174\clftsWidth3 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt120 \clpadl180 \clpadb120 \clpadr180 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2\fs28 \cf6 \cb5 \strokec6 \uc0\u10060 
+\f0  NEVER OUTPUT\cb1 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+
+\f2 \cf6 \cb5 \uc0\u9989 
+\f0  ALWAYS USE INSTEAD\cb1 \cell \row
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \tamart560 \tamarb560 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalt\clvertalbase \clshdrawnil \clwWidth3826\clftsWidth3 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt120 \clpadl180 \clpadb120 \clpadr180 \gaph\cellx4320
+\clvertalt\clvertalbase \clshdrawnil \clwWidth12174\clftsWidth3 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt120 \clpadl180 \clpadb120 \clpadr180 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf4 \cb5 \strokec3 "You have diabetes."\cf0 \cb1 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf4 \cb5 "Your glucose levels are elevated and should be reviewed by a doctor."\cf0 \cb1 \cell \row
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \tamart560 \tamarb560 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalt\clvertalbase \clshdrawnil \clwWidth3826\clftsWidth3 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt120 \clpadl180 \clpadb120 \clpadr180 \gaph\cellx4320
+\clvertalt\clvertalbase \clshdrawnil \clwWidth12174\clftsWidth3 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt120 \clpadl180 \clpadb120 \clpadr180 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf4 \cb5 "This indicates cancer."\cf0 \cb1 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf4 \cb5 "These values are outside the normal range. Further investigation by a specialist is strongly recommended."\cf0 \cb1 \cell \row
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \tamart560 \tamarb560 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalt\clvertalbase \clshdrawnil \clwWidth3826\clftsWidth3 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt120 \clpadl180 \clpadb120 \clpadr180 \gaph\cellx4320
+\clvertalt\clvertalbase \clshdrawnil \clwWidth12174\clftsWidth3 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt120 \clpadl180 \clpadb120 \clpadr180 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf4 \cb5 "You are at high risk of a heart attack."\cf0 \cb1 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf4 \cb5 "Your LDL and triglyceride levels together represent a cardiovascular risk factor worth discussing with a cardiologist."\cf0 \cb1 \cell \row
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \tamart560 \tamarb560 \trbrdrl\brdrnil \trbrdrr\brdrnil 
+\clvertalt\clvertalbase \clshdrawnil \clwWidth3826\clftsWidth3 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt120 \clpadl180 \clpadb120 \clpadr180 \gaph\cellx4320
+\clvertalt\clvertalbase \clshdrawnil \clwWidth12174\clftsWidth3 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt120 \clpadl180 \clpadb120 \clpadr180 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf4 \cb5 "Your kidneys are failing."\cf0 \cb1 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf4 \cb5 "Your creatinine levels are significantly elevated. This may indicate reduced kidney function and warrants urgent medical review."\cf0 \cb1 \cell \row
+
+\itap1\trowd \taflags1 \trgaph108\trleft-108 \tamart560 \tamarb560 \trbrdrl\brdrnil \trbrdrt\brdrnil \trbrdrr\brdrnil 
+\clvertalt\clvertalbase \clshdrawnil \clwWidth3826\clftsWidth3 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt120 \clpadl180 \clpadb120 \clpadr180 \gaph\cellx4320
+\clvertalt\clvertalbase \clshdrawnil \clwWidth12174\clftsWidth3 \clbrdrt\brdrnil \clbrdrl\brdrnil \clbrdrb\brdrnil \clbrdrr\brdrnil \clpadt120 \clpadl180 \clpadb120 \clpadr180 \gaph\cellx8640
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf4 \cb5 "You are fine."\cf0 \cb1 \cell 
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf4 \cb5 "Your results are within normal reference ranges. Routine check-up with your doctor is still recommended."\
+\pard\intbl\itap1\pardeftab720\partightenfactor0
+\cf0 \cb1 \cell \lastrow\row
+\pard\pardeftab720\sa400\partightenfactor0
+
+\fs32 \cf4 \cb5 \strokec4 The guiding principle:\'a0Vitalis provides health intelligence, not medical diagnosis. We flag, we contextualize, we guide \'97 we never conclude.\
+\pard\pardeftab720\sa180\partightenfactor0
+
+\fs30 \cf6 \strokec6 4.3 Emergency Alert System\
+\pard\pardeftab720\sa400\partightenfactor0
+
+\fs32 \cf4 \strokec4 When the rule engine detects a critical-threshold crossing, the frontend renders a full-screen emergency banner with:\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\sa160\partightenfactor0
+\ls1\ilvl0\cf4 \cb5 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec4 The specific critical finding in plain language\cb1 \
+\pard\tx220\tx720\tx4575\pardeftab720\li720\fi-720\sa160\partightenfactor0
+\ls1\ilvl0\cf4 \cb5 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec4 A direct prompt:\'a0
+\f4\i "Please seek medical attention within 24 hours or call your doctor immediately."
+\f0\i0 \cb1 \
+\pard\tx220\tx720\pardeftab720\li720\fi-720\sa160\partightenfactor0
+\ls1\ilvl0\cf4 \cb5 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 {\listtext	\uc0\u8226 	}\expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec4 Emergency contact shortcuts (local hospital finder, emergency dial)\cb1 \
+\pard\pardeftab720\sa400\partightenfactor0
+\cf4 \cb5 \strokec4 This alert fires\'a0deterministically\'a0from the rule engine \'97 it does not depend on the AI's language generation, ensuring it cannot be suppressed by prompt variation.\
+\pard\pardeftab720\sa180\partightenfactor0
+
+\fs30 \cf6 \strokec6 4.4 Confidence & Uncertainty Communication\
+\pard\pardeftab720\sa400\partightenfactor0
+
+\fs32 \cf4 \strokec4 Any finding where OCR confidence is below 70% or where the AI signals ambiguity is displayed with a visual warning indicator. The user is explicitly told:\'a0
+\f4\i "This value may be inaccurate due to image quality. Please cross-check against your physical report."
+\f0\i0 \
+This prevents the application from presenting false certainty \'97 a critical safety and trust consideration.\
+}
