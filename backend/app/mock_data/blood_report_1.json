@@ -1,0 +1,136 @@
+{
+  "patient_name": "Rahul Sharma",
+  "age": 35,
+  "gender": "Male",
+  "report_date": "2026-05-18",
+  "report_type": "Comprehensive Blood Panel",
+  "lab_name": "Apollo Diagnostics",
+  "ocr_confidence": 0.98,
+  "overall_risk": "medium",
+  "overall_score": 74,
+  "organScores": {
+    "cardiovascular": 78,
+    "blood": 92,
+    "kidneys": 95,
+    "liver": 88,
+    "pancreas": 76,
+    "brain": 98
+  },
+  "biomarkers": [
+    {
+      "name": "Hemoglobin",
+      "value": 14.5,
+      "unit": "g/dL",
+      "normal_range": "13.0 - 17.0",
+      "status": "normal",
+      "affected_organ": "blood",
+      "confidence": 0.99,
+      "plain_english": "Your blood iron transport capacity is optimal and healthy.",
+      "clinical_term": "Normocythaemia",
+      "icd10_hint": "Z00.0"
+    },
+    {
+      "name": "Glucose",
+      "value": 162,
+      "unit": "mg/dL",
+      "normal_range": "70 - 140",
+      "status": "warning",
+      "affected_organ": "pancreas",
+      "confidence": 0.97,
+      "plain_english": "Your blood sugar is moderately elevated. Reduce refined carb intake and consult a physician.",
+      "clinical_term": "Impaired Fasting Glucose",
+      "icd10_hint": "R73.09"
+    },
+    {
+      "name": "LDL",
+      "value": 148,
+      "unit": "mg/dL",
+      "normal_range": "< 100",
+      "status": "warning",
+      "affected_organ": "cardiovascular",
+      "confidence": 0.96,
+      "plain_english": "LDL (bad) cholesterol is elevated, raising long-term cardiovascular risk.",
+      "clinical_term": "Hypercholesterolaemia",
+      "icd10_hint": "E78.0"
+    },
+    {
+      "name": "Creatinine",
+      "value": 0.9,
+      "unit": "mg/dL",
+      "normal_range": "0.6 - 1.2",
+      "status": "normal",
+      "affected_organ": "kidneys",
+      "confidence": 0.99,
+      "plain_english": "Kidney filtration rate is operating within stable target values.",
+      "clinical_term": "Normocreatininemia",
+      "icd10_hint": "Z00.0"
+    },
+    {
+      "name": "AST",
+      "value": 38,
+      "unit": "U/L",
+      "normal_range": "10 - 40",
+      "status": "normal",
+      "affected_organ": "liver",
+      "confidence": 0.95,
+      "plain_english": "Liver enzyme levels show healthy cellular functions.",
+      "clinical_term": "Normal AST",
+      "icd10_hint": "Z00.0"
+    },
+    {
+      "name": "ALT",
+      "value": 52,
+      "unit": "U/L",
+      "normal_range": "7 - 56",
+      "status": "normal",
+      "affected_organ": "liver",
+      "confidence": 0.96,
+      "plain_english": "Liver filtration enzyme is at an acceptable level.",
+      "clinical_term": "Normal ALT",
+      "icd10_hint": "Z00.0"
+    },
+    {
+      "name": "Sodium",
+      "value": 139,
+      "unit": "mEq/L",
+      "normal_range": "135 - 145",
+      "status": "normal",
+      "affected_organ": "brain",
+      "confidence": 0.98,
+      "plain_english": "Blood sodium balance, vital for neural activity, is healthy.",
+      "clinical_term": "Normonatremia",
+      "icd10_hint": "Z00.0"
+    }
+  ],
+  "emergency_flags": [],
+  "summary_patient": "MODERATE RISK: Minor imbalances found in your Glucose and LDL Cholesterol. These levels indicate localized metabolic stress. We suggest a general review with your physician in 2-3 days.",
+  "summary_doctor": "METABOLIC INSTABILITY: Elevated warning thresholds recorded for Glucose (162 mg/dL, IFG pattern) and LDL-C (148 mg/dL). Recommend primary physician review, fasting lipid reassessment, and lifestyle modification counseling.",
+  "action_plan": {
+    "diet": [
+      "Reduce refined carbohydrates and sugary beverages",
+      "Introduce soluble oat fiber and omega-3 rich fish",
+      "Increase green leafy vegetables and legume intake"
+    ],
+    "lifestyle": [
+      "30 minutes of brisk walking daily",
+      "Monitor fasting blood glucose bi-weekly",
+      "Track weekly cholesterol-related dietary intake"
+    ],
+    "specialist": "General Physician / Endocrinologist",
+    "urgency": "Within 48-72 Hours"
+  },
+  "historical": [
+    {
+      "date": "2025-11-10",
+      "biomarkers": { "glucose": 108, "hemoglobin": 15.1, "creatinine": 0.88, "sodium": 141 }
+    },
+    {
+      "date": "2026-02-14",
+      "biomarkers": { "glucose": 135, "hemoglobin": 14.9, "creatinine": 0.87, "sodium": 140 }
+    },
+    {
+      "date": "2026-05-18",
+      "biomarkers": { "glucose": 162, "hemoglobin": 14.5, "creatinine": 0.9, "sodium": 139 }
+    }
+  ]
+}

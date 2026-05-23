@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Sparkles, Activity, UploadCloud, ArrowRight, FileText,
   CheckCircle, Cpu, FileJson, Trash2, Database, Shield,
   Brain, Heart, FlaskConical, Stethoscope, TrendingUp, MessageCircle,
-  Zap, AlertCircle, CrossIcon
+  Zap, AlertCircle, Play, ChevronRight
 } from 'lucide-react';
 import { MOCK_REPORTS, analyzeBiomarkers, parseRawReportText } from './services/medicalEngine';
 import AnatomicalVisualizer from './components/AnatomicalVisualizer';
@@ -11,6 +11,7 @@ import RiskDashboard from './components/RiskDashboard';
 import TrendAnalysis from './components/TrendAnalysis';
 import EmergencyAlert from './components/EmergencyAlert';
 import PrintableActionPlan from './components/PrintableActionPlan';
+import AIInsightPanel from './components/AIInsightPanel';
 import {
   AnimatedRedCross,
   ECGStrip,
@@ -18,9 +19,7 @@ import {
   BloodCells,
   BloodStreaks,
   DataStreams,
-  VitalsMonitor,
   HospitalStatusBadge,
-  RedCrossButton,
   MedicalParticleField,
   FloatingCrosses,
 } from './components/HospitalEffects';
@@ -71,16 +70,16 @@ Hemoglobin            14.2 g/dL   (Normal: 13.0 - 17.0)
 Verified by laboratory computer auto-signature`
 };
 
-const LOG_MESSAGES = [
-  "Initializing optical character extraction pipeline...",
-  "Applying binarization & contrast optimization...",
-  "Executing OCR matrix segmentation on report typography...",
-  "Structuring text into biometric database indices (Confidence: 96%)...",
-  "Passing parameters to deterministic safety rule validator...",
-  "Evaluating thresholds for troponin, glucose, creatinine, platelets...",
-  "Synthesizing plain-language clinical translations...",
-  "Injecting action plans and compiling specialist referrals...",
-  "System ready. Dispatching analysis payload..."
+const CINEMATIC_LOADING_STEPS = [
+  { msg: "Initializing optical character extraction pipeline...", icon: "🔬" },
+  { msg: "Applying binarization & contrast optimization...", icon: "⚙️" },
+  { msg: "Extracting diagnostic markers from report typography...", icon: "📊" },
+  { msg: "Analyzing hematological patterns...", icon: "🩸" },
+  { msg: "Running WHO/ICMR clinical threshold validation...", icon: "🛡️" },
+  { msg: "Evaluating organ-level risk correlations...", icon: "🫀" },
+  { msg: "Synthesizing AI patient explanation layer...", icon: "🧠" },
+  { msg: "Generating preventive healthcare recommendations...", icon: "💊" },
+  { msg: "Analysis complete. Dispatching intelligence payload...", icon: "✅" },
 ];
 
 const PROCESS_STEPS = [
@@ -117,6 +116,38 @@ const FEATURES = [
   },
 ];
 
+// Animated counter hook
+function useAnimatedCounter(target, duration = 1800) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    const start = performance.now();
+    const step = (now) => {
+      const p = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setValue(Math.round(eased * target));
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [target, duration]);
+  return value;
+}
+
+function StatCounter({ value, suffix = '', prefix = '' }) {
+  // Extract numeric part
+  const numericVal = parseFloat(value.replace(/[^0-9.]/g, ''));
+  const hasLt = value.startsWith('<');
+  const hasPct = value.includes('%');
+  const hasSec = value.includes('s');
+  const animated = useAnimatedCounter(numericVal, 2000);
+  
+  let display = animated;
+  if (hasLt) display = `< ${animated}`;
+  if (hasPct) display = `${animated}%`;
+  if (hasSec) display = `< ${animated}s`;
+  
+  return <span>{display}</span>;
+}
+
 /* ══════════════════════════════════════════════════════════
    MAIN APP
    ══════════════════════════════════════════════════════════ */
@@ -129,6 +160,7 @@ export default function App() {
   const [scanProgress, setScanProgress] = useState(0);
   const [activeLog, setActiveLog] = useState('');
   const [completedLogs, setCompletedLogs] = useState([]);
+  const [loadingStep, setLoadingStep] = useState(0);
 
   const [criticalFlags, setCriticalFlags] = useState([]);
   const [showEmergency, setShowEmergency] = useState(false);
@@ -140,21 +172,28 @@ export default function App() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [historyReports, setHistoryReports] = useState([]);
 
-  // Animated counter for hero BPM display
-  const [heroBpm, setHeroBpm] = useState(72);
+  // Demo Mode state
+  const [demoMode, setDemoMode] = useState(false);
+  const [showDemoBanner, setShowDemoBanner] = useState(false);
+
+  // Dashboard reveal animation
+  const [dashboardVisible, setDashboardVisible] = useState(false);
+
   useEffect(() => {
-    const t = setInterval(() => {
-      setHeroBpm(b => Math.max(60, Math.min(90, b + Math.floor(Math.random() * 5) - 2)));
-    }, 1800);
-    return () => clearInterval(t);
-  }, []);
+    if (screen === 'analysis') {
+      setTimeout(() => setDashboardVisible(true), 100);
+    } else {
+      setDashboardVisible(false);
+    }
+  }, [screen]);
 
   /* ── Report loaders ───────────────────────────────────── */
   const handleLoadReport = (reportKey) => {
     setScreen('scanning');
     setScanProgress(0);
+    setLoadingStep(0);
     setCompletedLogs([]);
-    setActiveLog(LOG_MESSAGES[0]);
+    setActiveLog(CINEMATIC_LOADING_STEPS[0].msg);
 
     const report = MOCK_REPORTS[reportKey];
     const analysis = analyzeBiomarkers(report.biomarkers);
@@ -189,9 +228,17 @@ export default function App() {
     }
   };
 
+  // Demo mode loader — instant gratification
+  const handleDemoMode = () => {
+    setDemoMode(true);
+    setShowDemoBanner(true);
+    handleLoadReport('critical');
+  };
+
   const handleParseCustomText = (textToParse) => {
     setScreen('scanning');
     setScanProgress(0);
+    setLoadingStep(0);
     setCompletedLogs([]);
     setActiveLog('Initiating Regex OCR Mapping Sequence...');
 
@@ -204,11 +251,11 @@ export default function App() {
         overall_risk: 'medium',
         ocr_confidence: 0.94,
         biomarkers: [
-          { name: 'Hemoglobin', value: 11.5, unit: 'g/dL', normal_range: '12.0 - 16.0', status: 'warning', affected_organ: 'blood', confidence: 0.96, plain_english: 'Iron transport capability is slightly low, which may lead to mild fatigue.', clinical_term: 'Mild Anemia', icd10_hint: 'D64.9' },
+          { name: 'Hemoglobin', value: 11.5, unit: 'g/dL', normal_range: '12.0 - 16.0', status: 'warning', affected_organ: 'blood', confidence: 0.96, plain_english: 'Iron transport capability is slightly low.', clinical_term: 'Mild Anemia', icd10_hint: 'D64.9' },
           { name: 'Glucose', value: 155, unit: 'mg/dL', normal_range: '70 - 140', status: 'warning', affected_organ: 'pancreas', confidence: 0.98, plain_english: 'Your fasting blood sugar is elevated. Consider a sugar screening.', clinical_term: 'Impaired Glucose Tolerance', icd10_hint: 'R73.09' }
         ],
-        summary_patient: 'MODERATE RISK: Imbalances found in Hemoglobin and Glucose. These indicate mild metabolic and blood system stress.',
-        summary_doctor: 'METABOLIC INSTABILITY: Elevated warning thresholds recorded for Hemoglobin (11.5 g/dL) and Glucose (155 mg/dL). Primary care physician evaluation is recommended.',
+        summary_patient: 'MODERATE RISK: Imbalances found in Hemoglobin and Glucose.',
+        summary_doctor: 'METABOLIC INSTABILITY: Elevated warning thresholds recorded.',
         action_plan: {
           diet: ['Soluble oat fibers', 'Increase green leafy vegetables', 'Reduce refined sugars'],
           lifestyle: ['Ensure 7.5 hours sleep', 'Aim for 30 minutes walking daily'],
@@ -282,7 +329,8 @@ export default function App() {
   /* ── Scan simulation ──────────────────────────────────── */
   useEffect(() => {
     if (screen !== 'scanning') return;
-    const totalSteps = LOG_MESSAGES.length;
+    const totalSteps = CINEMATIC_LOADING_STEPS.length;
+    let stepIndex = 0;
     const interval = setInterval(() => {
       setScanProgress(prev => {
         const next = prev + (100 / totalSteps);
@@ -291,15 +339,20 @@ export default function App() {
           setTimeout(() => {
             setScreen('analysis');
             if (criticalFlags.length > 0) setShowEmergency(true);
-          }, 400);
+          }, 500);
           return 100;
         }
-        const idx = Math.floor(next / (100 / totalSteps));
-        setCompletedLogs(logs => [...logs, LOG_MESSAGES[idx - 1]]);
-        setActiveLog(LOG_MESSAGES[idx]);
+        stepIndex = Math.floor(next / (100 / totalSteps));
+        const prevMsg = CINEMATIC_LOADING_STEPS[stepIndex - 1]?.msg;
+        if (prevMsg) setCompletedLogs(logs => [...logs, prevMsg]);
+        const curr = CINEMATIC_LOADING_STEPS[stepIndex];
+        if (curr) {
+          setActiveLog(curr.msg);
+          setLoadingStep(stepIndex);
+        }
         return next;
       });
-    }, 700);
+    }, 650);
     return () => clearInterval(interval);
   }, [screen, criticalFlags]);
 
@@ -346,9 +399,18 @@ export default function App() {
             </div>
             <div className="flex items-center gap-3">
               <HospitalStatusBadge status="OPERATIONAL" />
-              <span className="text-xs font-bold text-slate-400 hidden sm:block">
-                BPM <span className="text-red-500 font-black vitals-counter heartbeat inline-block">{heroBpm}</span>
-              </span>
+              {/* Demo Mode Toggle */}
+              <button
+                onClick={() => demoMode ? setDemoMode(false) : handleDemoMode()}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                  demoMode
+                    ? 'bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-200'
+                    : 'bg-white/80 border-slate-200 text-slate-600 hover:border-violet-300 hover:text-violet-600'
+                }`}
+              >
+                <Play className="h-3 w-3" />
+                {demoMode ? 'Demo ON' : 'Demo Mode'}
+              </button>
             </div>
           </nav>
 
@@ -392,21 +454,16 @@ export default function App() {
               </p>
             </div>
 
-            {/* ── Vitals Monitor Widget ───────────────── */}
-            <div className="w-full max-w-2xl mb-8 animate-fade-in">
-              <VitalsMonitor bpm={heroBpm} spo2={98} bp="118/76" temp={98.6} />
-            </div>
-
-            {/* ── Stats Row ───────────────────────────── */}
+            {/* ── Stats Row (animated) ─────────────── */}
             <div className="grid grid-cols-3 gap-4 max-w-lg w-full mb-10 animate-fade-in">
               {[
-                { value: '99.2%', label: 'OCR Accuracy',  color: '#DC143C' },
-                { value: '100%',  label: 'Rule Safety',    color: '#2563EB' },
-                { value: '< 30s', label: 'Full Analysis',  color: '#22C55E' },
+                { value: '99', suffix: '%', label: 'OCR Accuracy',  color: '#DC143C' },
+                { value: '100', suffix: '%',  label: 'Rule Safety',    color: '#2563EB' },
+                { value: '30', prefix: '< ', suffix: 's', label: 'Full Analysis',  color: '#22C55E' },
               ].map((stat, i) => (
                 <div key={i} className="glass-card-red rounded-2xl p-4 text-center vitals-glow">
                   <div className="text-2xl font-black mb-1 vitals-counter" style={{ color: stat.color, fontFamily: 'Outfit, sans-serif' }}>
-                    {stat.value}
+                    {stat.prefix || ''}<StatCounter value={`${stat.value}${stat.suffix}`} />{stat.suffix === '%' ? '' : stat.suffix}
                   </div>
                   <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
                     {stat.label}
@@ -432,6 +489,33 @@ export default function App() {
                   <p className="text-[11px] text-slate-500 leading-snug">{f.desc}</p>
                 </div>
               ))}
+            </div>
+
+            {/* ── How It Works Section ─────────────────── */}
+            <div className="w-full max-w-4xl mb-10">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(220,20,60,0.3), transparent)' }} />
+                <span className="text-xs font-bold text-red-400 uppercase tracking-widest">How It Works</span>
+                <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(220,20,60,0.3), transparent)' }} />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { step: '01', icon: '📄', title: 'Upload Report', desc: 'Drop any PDF, image, or paste text' },
+                  { step: '02', icon: '🔬', title: 'AI OCR Scan', desc: 'Extract all biomarker values instantly' },
+                  { step: '03', icon: '🛡️', title: 'Risk Analysis', desc: 'WHO/ICMR safety rule validation' },
+                  { step: '04', icon: '📊', title: 'Dashboard', desc: 'Full intelligence command center' },
+                ].map((s, i) => (
+                  <div key={i} className="glass-card rounded-2xl p-4 text-center relative overflow-hidden group hover:shadow-lg transition-all">
+                    <div className="text-2xl mb-2">{s.icon}</div>
+                    <div className="text-[9px] font-black text-red-400 uppercase tracking-widest mb-1">{s.step}</div>
+                    <h4 className="text-xs font-bold text-slate-800 mb-1" style={{ fontFamily: 'Outfit, sans-serif' }}>{s.title}</h4>
+                    <p className="text-[10px] text-slate-400 leading-snug">{s.desc}</p>
+                    {i < 3 && (
+                      <ChevronRight className="h-4 w-4 text-red-300 absolute top-1/2 -right-2 -translate-y-1/2 hidden sm:block" />
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* ── Sandbox Selector ────────────────────── */}
@@ -718,10 +802,10 @@ export default function App() {
                   <div className="h-2.5 w-2.5 rounded-full bg-amber-300" />
                   <div className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
                 </div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">System Log</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">AI Processing Log</span>
               </div>
               <div
-                className="font-mono text-[10px] h-32 overflow-y-auto flex flex-col gap-1.5 rounded-xl p-3 border"
+                className="font-mono text-[10px] h-40 overflow-y-auto flex flex-col gap-1.5 rounded-xl p-3 border"
                 style={{ background: '#FFF8F8', borderColor: 'rgba(220,20,60,0.08)' }}
               >
                 {completedLogs.map((log, idx) => (
@@ -746,7 +830,10 @@ export default function App() {
           ║  SCREEN 3 — CLINICAL DASHBOARD              ║
           ╚══════════════════════════════════════════════╝ */}
       {screen === 'analysis' && activeReport && (
-        <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(160deg, #FFF8F8 0%, #F0F6FF 60%, #EFF6FF 100%)' }}>
+        <div
+          className={`min-h-screen flex flex-col transition-all duration-700 ${dashboardVisible ? 'opacity-100' : 'opacity-0'}`}
+          style={{ background: 'linear-gradient(160deg, #FFF8F8 0%, #F0F6FF 60%, #EFF6FF 100%)' }}
+        >
 
           {/* ── Dashboard Header ────────────────────── */}
           <header className="bg-white/90 backdrop-blur-md border-b px-6 py-3 flex items-center justify-between sticky top-0 z-20"
@@ -754,7 +841,7 @@ export default function App() {
           >
             <div className="flex items-center gap-4">
               <button
-                onClick={() => { setScreen('landing'); setSelectedOrgan(null); }}
+                onClick={() => { setScreen('landing'); setSelectedOrgan(null); setDashboardVisible(false); }}
                 className="text-xs font-semibold text-slate-500 hover:text-red-500 flex items-center gap-1.5 transition-colors"
               >
                 ← Back
@@ -775,13 +862,19 @@ export default function App() {
                   <span className="pulse-dot" style={{ width: 6, height: 6 }} /> Critical
                 </span>
               )}
+              {activeReport.overall_risk === 'high' && <span className="badge-critical">High Risk</span>}
               {activeReport.overall_risk === 'medium' && <span className="badge-warning">Warning</span>}
-              {activeReport.overall_risk === 'normal' && <span className="badge-normal">Normal</span>}
+              {(activeReport.overall_risk === 'normal' || activeReport.overall_risk === 'low') && <span className="badge-normal">Normal</span>}
+              {demoMode && showDemoBanner && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-violet-100 border border-violet-200 text-violet-700">
+                  Demo Mode
+                </span>
+              )}
             </div>
 
             {/* Tabs */}
             <div className="flex bg-slate-100 p-0.5 rounded-xl border border-slate-200">
-              {['command', 'trends'].map(tab => (
+              {['command', 'insights', 'trends'].map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -792,7 +885,7 @@ export default function App() {
                   }`}
                   style={activeTab === tab ? { color: '#DC143C' } : {}}
                 >
-                  {tab === 'command' ? 'Health Analysis' : 'Trends'}
+                  {tab === 'command' ? '📊 Analysis' : tab === 'insights' ? '🧠 AI Insights' : '📈 Trends'}
                 </button>
               ))}
             </div>
@@ -820,6 +913,8 @@ export default function App() {
                   onPrintPlan={() => setScreen('print')}
                   onShowTrends={() => setActiveTab('trends')}
                 />
+              ) : activeTab === 'insights' ? (
+                <AIInsightPanel reportData={activeReport} />
               ) : (
                 <TrendAnalysis historicalData={historyReports} />
               )}

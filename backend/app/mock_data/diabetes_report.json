@@ -1,0 +1,124 @@
+{
+  "patient_name": "Priya Mehta",
+  "age": 52,
+  "gender": "Female",
+  "report_date": "2026-05-20",
+  "report_type": "Diabetic Monitoring Panel",
+  "lab_name": "Metropolis Healthcare Labs",
+  "ocr_confidence": 0.95,
+  "overall_risk": "high",
+  "overall_score": 48,
+  "organScores": {
+    "cardiovascular": 55,
+    "blood": 78,
+    "kidneys": 68,
+    "liver": 75,
+    "pancreas": 22,
+    "brain": 90
+  },
+  "biomarkers": [
+    {
+      "name": "Glucose",
+      "value": 241,
+      "unit": "mg/dL",
+      "normal_range": "70 - 140",
+      "status": "warning",
+      "affected_organ": "pancreas",
+      "confidence": 0.98,
+      "plain_english": "Your blood sugar is critically near the hyperglycaemic crisis threshold. Immediate medical consultation is required.",
+      "clinical_term": "Severe Hyperglycaemia",
+      "icd10_hint": "E11.9"
+    },
+    {
+      "name": "Hemoglobin",
+      "value": 10.8,
+      "unit": "g/dL",
+      "normal_range": "12.0 - 16.0",
+      "status": "warning",
+      "affected_organ": "blood",
+      "confidence": 0.95,
+      "plain_english": "Blood hemoglobin is below optimal. Fatigue and shortness of breath may worsen. Nutritional assessment needed.",
+      "clinical_term": "Mild Normocytic Anemia",
+      "icd10_hint": "D64.9"
+    },
+    {
+      "name": "LDL",
+      "value": 178,
+      "unit": "mg/dL",
+      "normal_range": "< 100",
+      "status": "warning",
+      "affected_organ": "cardiovascular",
+      "confidence": 0.94,
+      "plain_english": "LDL cholesterol is significantly elevated, posing a serious arterial blockage risk.",
+      "clinical_term": "Hypercholesterolaemia",
+      "icd10_hint": "E78.0"
+    },
+    {
+      "name": "Creatinine",
+      "value": 1.5,
+      "unit": "mg/dL",
+      "normal_range": "0.6 - 1.2",
+      "status": "warning",
+      "affected_organ": "kidneys",
+      "confidence": 0.93,
+      "plain_english": "Creatinine is mildly elevated. Your kidneys may be under strain due to long-term sugar exposure.",
+      "clinical_term": "Renal Clearance Insufficiency",
+      "icd10_hint": "N18.3"
+    },
+    {
+      "name": "Potassium",
+      "value": 3.9,
+      "unit": "mEq/L",
+      "normal_range": "3.5 - 5.2",
+      "status": "normal",
+      "affected_organ": "cardiovascular",
+      "confidence": 0.97,
+      "plain_english": "Potassium levels, essential for nerve and heart electricity, are optimal.",
+      "clinical_term": "Normokalemia",
+      "icd10_hint": "Z00.0"
+    },
+    {
+      "name": "Sodium",
+      "value": 137,
+      "unit": "mEq/L",
+      "normal_range": "135 - 145",
+      "status": "normal",
+      "affected_organ": "brain",
+      "confidence": 0.98,
+      "plain_english": "Sodium levels are balanced and healthy.",
+      "clinical_term": "Normonatremia",
+      "icd10_hint": "Z00.0"
+    }
+  ],
+  "emergency_flags": [],
+  "summary_patient": "HIGH RISK: Your blood sugar is dangerously close to a critical threshold, and your LDL cholesterol is significantly elevated. Combined with mild kidney strain, these findings require urgent clinical attention within 24 hours.",
+  "summary_doctor": "HIGH-RISK METABOLIC PANEL: Near-critical hyperglycaemia (Glucose 241 mg/dL), concurrent severe dyslipidaemia (LDL-C 178 mg/dL), early diabetic nephropathy signal (Creatinine 1.5 mg/dL, CKD Stage 2 risk). Full endocrinological workup with OGTT, HbA1c, and renal clearance studies recommended urgently.",
+  "action_plan": {
+    "diet": [
+      "Strict elimination of all simple sugars and white flour products",
+      "DASH diet protocol — low salt, high fiber, heart-protective fats",
+      "Monitor carbohydrate units (max 45g/meal)"
+    ],
+    "lifestyle": [
+      "Check fasting blood glucose every morning",
+      "Begin moderate walking program — 20 mins twice daily",
+      "Reduce all NSAID and OTC painkiller use to protect kidneys"
+    ],
+    "specialist": "Endocrinologist & Nephrologist",
+    "urgency": "Within 24 Hours"
+  },
+  "historical": [
+    {
+      "date": "2025-08-05",
+      "biomarkers": { "glucose": 145, "hemoglobin": 12.2, "creatinine": 1.1, "sodium": 138 }
+    },
+    {
+      "date": "2025-12-11",
+      "biomarkers": { "glucose": 188, "hemoglobin": 11.5, "creatinine": 1.3, "sodium": 137 }
+    },
+    {
+      "date": "2026-05-20",
+      "biomarkers": { "glucose": 241, "hemoglobin": 10.8, "creatinine": 1.5, "sodium": 137 }
+    }
+  ]
+}
