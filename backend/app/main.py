@@ -32,6 +32,14 @@ def get_health():
 from app.routes.analysis import router as analysis_router
 app.include_router(analysis_router, prefix="/api", tags=["clinical"])
 
+# AI Intelligence Layer
+try:
+    from app.routes.ai_insights import router as ai_router
+    app.include_router(ai_router, prefix="/api/ai", tags=["intelligence"])
+except Exception as e:
+    import logging
+    logging.getLogger("vitalis").warning(f"AI router not loaded: {e}")
+
 if __name__ == "__main__":
     host = os.getenv("API_HOST", "0.0.0.0")
     port = int(os.getenv("API_PORT", 8000))
