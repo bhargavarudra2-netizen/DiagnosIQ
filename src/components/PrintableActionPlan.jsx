@@ -28,13 +28,13 @@ export default function PrintableActionPlan({ reportData, onBack }) {
   return (
     <div className="w-full flex flex-col gap-6 select-text">
       {/* Printable page wrapper (non-print header controls) */}
-      <div className="glassmorphism p-5 rounded-2xl border border-slate-800/80 flex items-center justify-between no-print animate-fade-in">
+      <div className="glass-card rounded-2xl p-5 flex items-center justify-between no-print animate-fade-in">
         <div>
-          <h3 className="text-md font-bold text-slate-100 flex items-center gap-2">
-            <Printer className="h-5 w-5 text-cyber-cyan" />
+          <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2" style={{ fontFamily: 'Outfit, sans-serif' }}>
+            <Printer className="h-4.5 w-4.5 text-blue-500" />
             Personalized Clinical Action Plan
           </h3>
-          <p className="text-xs text-cyber-gray mt-0.5">
+          <p className="text-xs text-slate-400 mt-0.5">
             Optimized layout ready to print or export as PDF for clinical consults
           </p>
         </div>
@@ -42,17 +42,17 @@ export default function PrintableActionPlan({ reportData, onBack }) {
         <div className="flex gap-2">
           <button
             onClick={onBack}
-            className="px-4 py-2 bg-cyber-bg hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 text-xs font-bold rounded-xl transition-all"
+            className="btn-secondary text-xs px-4 py-2"
           >
             Back to Dashboard
           </button>
-          
+
           <button
             onClick={handlePrint}
-            className="px-4 py-2 bg-cyber-cyan hover:bg-cyan-400 text-cyber-bg font-extrabold text-xs rounded-xl transition-all shadow-md shadow-cyber-cyan/15 flex items-center gap-1.5"
+            className="btn-primary text-xs px-4 py-2"
           >
-            <Printer className="h-4.5 w-4.5" />
-            Print Report (PDF)
+            <Printer className="h-3.5 w-3.5" />
+            Print PDF
           </button>
         </div>
       </div>

@@ -1,137 +1,166 @@
 import React from 'react';
-import { AlertOctagon, Phone, ShieldAlert, Navigation, Stethoscope, Star, MapPin } from 'lucide-react';
+import { AlertOctagon, Phone, ShieldAlert, Navigation, Stethoscope, Star, MapPin, X } from 'lucide-react';
+
+/* ══════════════════════════════════════════════════════════
+   EMERGENCY ALERT MODAL — Clinical Light Theme
+   ══════════════════════════════════════════════════════════ */
 
 const SPECIALISTS_DATABASE = {
   cardiovascular: [
-    { name: "Dr. Sunita Mehta, MD", title: "Senior Interventional Cardiologist", hospital: "Apollo Heart Institute", rating: 4.9, dist: "1.2 km", phone: "+91 98110 54321" },
-    { name: "Dr. Vivek Anand, DM", title: "Clinical Cardiologist", hospital: "Max Cardio Centre", rating: 4.8, dist: "2.4 km", phone: "+91 99201 12345" }
+    { name: 'Dr. Sunita Mehta, MD',    title: 'Senior Interventional Cardiologist', hospital: 'Apollo Heart Institute',        rating: 4.9, dist: '1.2 km', phone: '+91 98110 54321' },
+    { name: 'Dr. Vivek Anand, DM',     title: 'Clinical Cardiologist',               hospital: 'Max Cardio Centre',             rating: 4.8, dist: '2.4 km', phone: '+91 99201 12345' }
   ],
   pancreas: [
-    { name: "Dr. Alok Sen, MD", title: "Consultant Endocrinologist", hospital: "Metro Diabetes & Endocrine Care", rating: 4.9, dist: "0.8 km", phone: "+91 98300 98765" },
-    { name: "Dr. Riya Chawla, DM", title: "Metabolic Specialist", hospital: "Fortis Organ Health Care", rating: 4.7, dist: "3.1 km", phone: "+91 97112 55667" }
+    { name: 'Dr. Alok Sen, MD',        title: 'Consultant Endocrinologist',          hospital: 'Metro Diabetes & Endocrine',    rating: 4.9, dist: '0.8 km', phone: '+91 98300 98765' },
+    { name: 'Dr. Riya Chawla, DM',     title: 'Metabolic Specialist',                hospital: 'Fortis Organ Health Care',      rating: 4.7, dist: '3.1 km', phone: '+91 97112 55667' }
   ],
   kidneys: [
-    { name: "Dr. Pradeep Kumar, DM", title: "Chief Nephrologist", hospital: "Global Kidney Clinic & Dialysis", rating: 4.9, dist: "1.5 km", phone: "+91 98450 11223" }
+    { name: 'Dr. Pradeep Kumar, DM',   title: 'Chief Nephrologist',                  hospital: 'Global Kidney & Dialysis',      rating: 4.9, dist: '1.5 km', phone: '+91 98450 11223' }
   ],
   blood: [
-    { name: "Dr. Nithya Swaminathan, MD", title: "Consultant Clinical Hematologist", hospital: "Cancer & Blood Care Center", rating: 4.8, dist: "2.8 km", phone: "+91 99400 88990" }
+    { name: 'Dr. Nithya Swaminathan',  title: 'Consultant Hematologist',             hospital: 'Cancer & Blood Care Center',    rating: 4.8, dist: '2.8 km', phone: '+91 99400 88990' }
   ],
   brain: [
-    { name: "Dr. Sameer Joshi, MCh", title: "Senior Neurologist", hospital: "National Neuro Sciences Center", rating: 4.9, dist: "1.9 km", phone: "+91 98100 44556" }
-  ]
+    { name: 'Dr. Sameer Joshi, MCh',   title: 'Senior Neurologist',                  hospital: 'National Neuro Sciences Center', rating: 4.9, dist: '1.9 km', phone: '+91 98100 44556' }
+  ],
 };
 
 export default function EmergencyAlert({ flags, onClose }) {
   if (!flags || flags.length === 0) return null;
 
-  // Gather specialists based on triggered organs in flags
   const triggeredOrgans = Array.from(new Set(flags.map(f => f.organ || 'cardiovascular')));
-  
   let specialists = [];
   triggeredOrgans.forEach(org => {
-    if (SPECIALISTS_DATABASE[org]) {
-      specialists = [...specialists, ...SPECIALISTS_DATABASE[org]];
-    }
+    if (SPECIALISTS_DATABASE[org]) specialists = [...specialists, ...SPECIALISTS_DATABASE[org]];
   });
-  
-  if (specialists.length === 0) {
-    specialists = SPECIALISTS_DATABASE.cardiovascular; // Default
-  }
+  if (specialists.length === 0) specialists = SPECIALISTS_DATABASE.cardiovascular;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-cyber-bg/90 backdrop-blur-xl animate-fade-in">
-      {/* Outer Pulse Border */}
-      <div className="absolute inset-0 border-4 border-cyber-red/30 animate-pulse pointer-events-none" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
+      style={{ background: 'rgba(15,23,42,0.60)', backdropFilter: 'blur(8px)' }}
+    >
+      {/* Alert border pulse */}
+      <div className="absolute inset-0 border-4 border-red-300/30 pointer-events-none animate-pulse" />
 
-      {/* Main Alert Modal */}
-      <div className="w-full max-w-3xl glassmorphism glow-red rounded-3xl overflow-hidden border border-cyber-red/60 shadow-[0_0_50px_rgba(255,74,90,0.3)] flex flex-col md:flex-row max-h-[90vh]">
-        
-        {/* Left Hand Warnings Panel */}
-        <div className="p-6 md:p-8 bg-gradient-to-b from-cyber-red/20 to-cyber-bg flex flex-col justify-between items-center md:items-start text-center md:text-left md:w-5/12 border-b md:border-b-0 md:border-r border-cyber-red/25">
-          <div className="flex flex-col items-center md:items-start gap-4">
-            <div className="p-3 bg-cyber-red/35 rounded-2xl glow-red animate-bounce">
-              <AlertOctagon className="h-10 w-10 text-cyber-red" />
+      {/* Modal */}
+      <div
+        className="w-full max-w-3xl rounded-3xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] animate-scale-in"
+        style={{
+          background: '#FFFFFF',
+          border: '1.5px solid #FCA5A5',
+          boxShadow: '0 20px 60px rgba(239,68,68,0.15), 0 4px 16px rgba(0,0,0,0.08)',
+        }}
+      >
+        {/* ── Left: Emergency Info ─────────────────────── */}
+        <div className="p-6 md:p-8 flex flex-col md:w-5/12 border-b md:border-b-0 md:border-r border-red-100"
+          style={{ background: 'linear-gradient(160deg, #FEF2F2 0%, #FFF5F5 100%)' }}
+        >
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="h-11 w-11 rounded-2xl bg-red-100 border border-red-200 flex items-center justify-center">
+                <AlertOctagon className="h-6 w-6 text-red-500" />
+              </div>
+              <div>
+                <h2 className="text-base font-black text-slate-800" style={{ fontFamily: 'Outfit, sans-serif', letterSpacing: '-0.02em' }}>
+                  Clinical Crisis Detected
+                </h2>
+                <p className="text-[11px] font-semibold text-red-500 uppercase tracking-wide">
+                  Deterministic Red-Flag Match
+                </p>
+              </div>
             </div>
-            
-            <div>
-              <h2 className="text-2xl font-black text-white tracking-tight uppercase">
-                Clinical Crisis Detected
-              </h2>
-              <p className="text-xs text-cyber-red font-bold mt-1 tracking-wider uppercase">
-                Deterministic Red Flag Rule Match
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-2 mt-2 w-full text-left">
-              {flags.map((flag, idx) => (
-                <div key={idx} className="bg-cyber-bg/70 border border-cyber-red/30 p-2.5 rounded-lg flex flex-col gap-0.5">
-                  <span className="text-[10px] text-cyber-gray uppercase font-bold">Biomarker Alert</span>
-                  <span className="text-xs font-bold text-white flex items-center justify-between">
-                    {flag.marker}: <strong className="text-cyber-red">{flag.value} {flag.unit}</strong>
-                  </span>
-                  <span className="text-[10px] text-cyber-red font-semibold leading-snug mt-1">
-                    {flag.condition}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <button
+              onClick={onClose}
+              className="text-slate-300 hover:text-slate-500 transition-colors p-1"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
 
-          <div className="mt-6 w-full">
-            <a 
+          {/* Flag List */}
+          <div className="flex flex-col gap-2 mb-6">
+            {flags.map((flag, idx) => (
+              <div key={idx} className="alert-red rounded-xl p-3">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="pulse-dot" />
+                  <span className="text-[10px] font-black text-red-400 uppercase tracking-wider">
+                    Biomarker Alert
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-slate-800">
+                    {flag.marker}
+                  </span>
+                  <span className="text-sm font-black text-red-600">
+                    {flag.value} {flag.unit}
+                  </span>
+                </div>
+                <p className="text-[11px] text-red-500 font-semibold mt-1 leading-snug">
+                  {flag.condition}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="mt-auto flex flex-col gap-2">
+            <a
               href="tel:102"
-              className="w-full py-3 bg-cyber-red hover:bg-red-500 text-white font-extrabold text-sm rounded-xl transition-all shadow-lg shadow-cyber-red/25 flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-all"
+              style={{ background: '#EF4444', color: '#FFFFFF', boxShadow: '0 4px 16px rgba(239,68,68,0.30)' }}
+              onMouseEnter={e => e.currentTarget.style.background = '#DC2626'}
+              onMouseLeave={e => e.currentTarget.style.background = '#EF4444'}
             >
-              <Phone className="h-4.5 w-4.5 animate-pulse" />
+              <Phone className="h-4 w-4 animate-pulse" />
               Dial Emergency (102 / 112)
             </a>
-            
-            <button 
+            <button
               onClick={onClose}
-              className="w-full py-2.5 mt-2 bg-transparent text-cyber-gray hover:text-slate-300 font-bold text-xs rounded-xl hover:underline transition-all"
+              className="w-full py-2.5 text-xs font-semibold text-slate-400 hover:text-slate-600 hover:underline transition-all rounded-xl"
             >
-              Acknowledge & Close Panel
+              Acknowledge & Continue
             </button>
           </div>
         </div>
 
-        {/* Right Hand Specialists / Finder Panel */}
-        <div className="p-6 md:p-8 flex-1 overflow-y-auto flex flex-col gap-5">
+        {/* ── Right: Specialists Panel ─────────────────── */}
+        <div className="p-6 md:p-8 flex-1 overflow-y-auto flex flex-col gap-5 bg-white">
           <div>
-            <h3 className="text-md font-extrabold text-slate-100 flex items-center gap-2">
-              <Stethoscope className="h-5 w-5 text-cyber-cyan" />
+            <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2" style={{ fontFamily: 'Outfit, sans-serif' }}>
+              <Stethoscope className="h-4.5 w-4.5 text-blue-500" />
               Urgent Specialty Care Network
             </h3>
-            <p className="text-xs text-cyber-gray mt-1">
-              Top-rated clinicians in your spatial cluster matched to these active risks:
+            <p className="text-[11px] text-slate-400 mt-1">
+              Top-rated clinicians matched to your active risk profile:
             </p>
           </div>
 
-          {/* Specialist List */}
-          <div className="flex flex-col gap-3">
+          {/* Specialist Cards */}
+          <div className="flex flex-col gap-2.5">
             {specialists.map((spec, idx) => (
-              <div 
-                key={idx} 
-                className="bg-cyber-bg/60 border border-slate-800/80 p-4 rounded-2xl flex justify-between items-center hover:border-slate-700 transition-colors"
+              <div
+                key={idx}
+                className="glass-card rounded-2xl p-4 flex items-center justify-between glass-card-hover"
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <h4 className="text-xs font-bold text-slate-100">{spec.name}</h4>
-                    <div className="flex items-center text-[10px] text-cyber-amber font-extrabold gap-0.5">
-                      <Star className="h-3 w-3 fill-cyber-amber stroke-cyber-amber" />
+                    <h4 className="text-xs font-bold text-slate-800">{spec.name}</h4>
+                    <div className="flex items-center gap-0.5 text-[10px] font-bold text-amber-500">
+                      <Star className="h-3 w-3 fill-amber-400 stroke-amber-400" />
                       {spec.rating}
                     </div>
                   </div>
-                  <p className="text-[10px] font-bold text-cyber-cyan mt-0.5 uppercase tracking-wider">{spec.title}</p>
-                  <p className="text-[10px] text-cyber-gray mt-1 flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    {spec.hospital} ({spec.dist})
+                  <p className="text-[10px] font-semibold text-blue-600 mt-0.5 uppercase tracking-wide">
+                    {spec.title}
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+                    <MapPin className="h-2.5 w-2.5" />
+                    {spec.hospital} · {spec.dist}
                   </p>
                 </div>
-
-                <a 
+                <a
                   href={`tel:${spec.phone}`}
-                  className="px-3 py-1.5 bg-cyber-cardLight border border-slate-700/60 hover:border-cyber-cyan text-cyber-cyan text-[10px] font-extrabold rounded-lg transition-all"
+                  className="btn-secondary text-[10px] px-3 py-1.5 text-xs"
                 >
                   Consult
                 </a>
@@ -139,22 +168,22 @@ export default function EmergencyAlert({ flags, onClose }) {
             ))}
           </div>
 
-          {/* Cyber Radar Location Grid mockup */}
-          <div className="border border-slate-800 rounded-2xl p-4 bg-cyber-bg/40 relative overflow-hidden flex flex-col items-center text-center">
-            {/* Pulsing circular grid background */}
-            <div className="absolute inset-0 opacity-10 flex items-center justify-center">
-              <div className="border border-cyber-cyan rounded-full h-32 w-32 animate-ping" />
-              <div className="border border-cyber-cyan rounded-full h-16 w-16" />
+          {/* ER Locator Card */}
+          <div
+            className="rounded-2xl p-4 flex flex-col items-center text-center relative overflow-hidden"
+            style={{ background: '#EFF6FF', border: '1px solid #BFDBFE' }}
+          >
+            <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+              <div className="h-32 w-32 rounded-full border-2 border-blue-400 animate-ping" />
+              <div className="h-16 w-16 rounded-full border border-blue-300 absolute" />
             </div>
-
-            <Navigation className="h-6 w-6 text-cyber-cyan animate-pulse z-10" />
-            <h4 className="text-xs font-bold text-slate-200 mt-2 z-10">Nearest Hospital ER Facility Locator</h4>
-            <p className="text-[10px] text-cyber-gray mt-1 max-w-xs z-10">
-              Metro Trauma Center (1.4 km) - Ambulatory & ICU facilities active. GPS tracking synced.
+            <Navigation className="h-6 w-6 text-blue-500 animate-pulse z-10 mb-2" />
+            <h4 className="text-xs font-bold text-slate-700 z-10">Nearest Hospital ER</h4>
+            <p className="text-[10px] text-slate-500 mt-1 z-10 max-w-[200px]">
+              Metro Trauma Center (1.4 km) — ICU & Ambulatory facilities active.
             </p>
           </div>
         </div>
-
       </div>
     </div>
   );

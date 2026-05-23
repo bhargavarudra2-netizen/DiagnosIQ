@@ -1,146 +1,714 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+/* ══════════════════════════════════════════════════════════
+   VITALIS AI — HOSPITAL INTELLIGENCE COMMAND CENTER
+   Futuristic Medical + Dynamic Hospital Theme
+   ══════════════════════════════════════════════════════════ */
 
 @theme {
-  --color-cyber-bg: #030712;
-  --color-cyber-card: #0b1329;
+  --color-medical-white:      #FFFFFF;
+  --color-medical-soft:       #F8FBFF;
+  --color-medical-muted:      #F1F5F9;
+  --color-medical-border:     #E2E8F0;
+  --color-medical-blueBorder: #BFDBFE;
+  --color-medical-blueTint:   #EFF6FF;
+  --color-medical-blue:       #2563EB;
+  --color-medical-blueHover:  #1D4ED8;
+  --color-medical-blueLight:  #3B82F6;
+  --color-medical-navy:       #0F172A;
+  --color-medical-slate:      #475569;
+  --color-medical-gray:       #94A3B8;
+  --color-medical-red:        #EF4444;
+  --color-medical-crimson:    #DC143C;
+  --color-medical-redSoft:    #FEF2F2;
+  --color-medical-redBorder:  #FCA5A5;
+  --color-medical-green:      #22C55E;
+  --color-medical-greenSoft:  #F0FDF4;
+  --color-medical-amber:      #F59E0B;
+  --color-medical-amberSoft:  #FFFBEB;
+  --color-medical-cyan:       #06B6D4;
+
+  /* Legacy cyber tokens preserved */
+  --color-cyber-bg:        #030712;
+  --color-cyber-card:      #0b1329;
   --color-cyber-cardLight: #111c3a;
-  --color-cyber-cyan: #00f2fe;
-  --color-cyber-emerald: #05cd99;
-  --color-cyber-amber: #ffb800;
-  --color-cyber-red: #ff4a5a;
-  --color-cyber-slate: #1f2937;
-  --color-cyber-gray: #9ca3af;
-  
-  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animate-glow-pulse: glowPulse 2s ease-in-out infinite;
-  --animate-scan: scanLine 2.5s linear infinite;
-  --animate-fade-in: fadeIn 0.5s ease-out forwards;
-  --animate-shimmer: shimmer 1.5s infinite linear;
+  --color-cyber-cyan:      #00f2fe;
+  --color-cyber-emerald:   #05cd99;
+  --color-cyber-amber:     #ffb800;
+  --color-cyber-red:       #ff4a5a;
+  --color-cyber-slate:     #1f2937;
+  --color-cyber-gray:      #9ca3af;
+
+  /* Animation tokens */
+  --animate-fade-in:      fadeIn 0.5s ease-out forwards;
+  --animate-fade-up:      fadeUp 0.6s ease-out forwards;
+  --animate-float:        float 4s ease-in-out infinite;
+  --animate-pulse-dot:    pulseDot 1.8s ease-in-out infinite;
+  --animate-scan:         scanLine 2.5s linear infinite;
+  --animate-scale-in:     scaleIn 0.3s ease-out forwards;
+  --animate-slide-up:     slideUp 0.4s ease-out forwards;
+  --animate-shimmer:      shimmer 1.5s infinite linear;
+  --animate-ecg:          ecgDraw 3s linear infinite;
+  --animate-blood-drop:   bloodDrop 2s ease-in infinite;
+  --animate-cross-pulse:  crossPulse 2s ease-in-out infinite;
+  --animate-cross-spin:   crossSpin 8s linear infinite;
+  --animate-heartbeat:    heartbeat 1.2s ease-in-out infinite;
+  --animate-scan-beam:    scanBeam 3s ease-in-out infinite;
+  --animate-blood-flow:   bloodFlow 4s linear infinite;
+  --animate-vitals:       vitalsGlow 2s ease-in-out infinite;
 }
 
-@keyframes glowPulse {
-  0%, 100% { opacity: 0.7; filter: drop-shadow(0 0 4px rgba(0, 242, 254, 0.4)); }
-  50% { opacity: 1; filter: drop-shadow(0 0 15px rgba(0, 242, 254, 0.8)); }
-}
+/* ══════════════════════════════════════════════════════════
+   KEYFRAMES — HOSPITAL DYNAMIC EFFECTS
+   ══════════════════════════════════════════════════════════ */
 
-@keyframes scanLine {
-  0% { top: 0%; }
-  50% { top: 100%; }
-  100% { top: 0%; }
-}
-
+/* Page transitions */
 @keyframes fadeIn {
-  0% { opacity: 0; transform: translateY(10px); }
+  0%   { opacity: 0; transform: translateY(8px); }
   100% { opacity: 1; transform: translateY(0); }
 }
-
+@keyframes fadeUp {
+  0%   { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  0%   { opacity: 0; transform: scale(0.96); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes slideUp {
+  0%   { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
+  0%   { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
 
-@utility base-body {
-  background-image: radial-gradient(circle at 50% -20%, #111c3a 0%, #030712 70%);
+/* Float for hero elements */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
 }
 
+/* Pulse dot */
+@keyframes pulseDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.5); opacity: 0.5; }
+}
+
+/* ECG / Cardiogram wave */
+@keyframes ecgDraw {
+  0%   { stroke-dashoffset: 1000; opacity: 0.9; }
+  60%  { stroke-dashoffset: 0;    opacity: 1; }
+  85%  { stroke-dashoffset: 0;    opacity: 1; }
+  100% { stroke-dashoffset: -1000; opacity: 0; }
+}
+
+/* Blood drop falling */
+@keyframes bloodDrop {
+  0%   { transform: translateY(-20px) scaleY(0.8); opacity: 0.9; }
+  70%  { transform: translateY(60px)  scaleY(1.1); opacity: 1; }
+  85%  { transform: translateY(68px)  scaleY(0.7) scaleX(1.3); opacity: 0.8; }
+  100% { transform: translateY(72px)  scaleY(0);  opacity: 0; }
+}
+
+/* Red cross pulse */
+@keyframes crossPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 8px rgba(220, 20, 60, 0.5));
+  }
+  50% {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 24px rgba(220, 20, 60, 0.85));
+  }
+}
+
+/* Outer cross ring spin */
+@keyframes crossSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Heartbeat / cardiac thump */
+@keyframes heartbeat {
+  0%   { transform: scale(1); }
+  14%  { transform: scale(1.25); }
+  28%  { transform: scale(1); }
+  42%  { transform: scale(1.15); }
+  70%  { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+/* Scan beam sweep */
+@keyframes scanBeam {
+  0%        { transform: translateX(-100%); opacity: 0; }
+  10%       { opacity: 1; }
+  90%       { opacity: 1; }
+  100%      { transform: translateX(100%); opacity: 0; }
+}
+
+/* Blood flow streak */
+@keyframes bloodFlow {
+  0%   { transform: translateY(-100%); opacity: 0.8; }
+  100% { transform: translateY(400%);  opacity: 0; }
+}
+
+/* Vitals glow pulse */
+@keyframes vitalsGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(220, 20, 60, 0.15), 0 0 0 1px rgba(220,20,60,0.2); }
+  50%       { box-shadow: 0 0 24px rgba(220, 20, 60, 0.40), 0 0 0 2px rgba(220,20,60,0.4); }
+}
+
+/* Scan line (legacy) */
+@keyframes scanLine {
+  0%   { top: 0%; }
+  50%  { top: 100%; }
+  100% { top: 0%; }
+}
+
+/* Orbiting ring */
+@keyframes orbitRing {
+  from { transform: rotate(0deg) translateX(56px) rotate(0deg); }
+  to   { transform: rotate(360deg) translateX(56px) rotate(-360deg); }
+}
+
+/* Data stream */
+@keyframes dataStream {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  10%  { opacity: 0.8; }
+  90%  { opacity: 0.8; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+/* Ripple expand */
+@keyframes rippleOut {
+  0%   { transform: scale(0.5); opacity: 0.8; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* Progress fill for rings */
+@keyframes progressFill {
+  0%   { stroke-dashoffset: 283; }
+  100% { stroke-dashoffset: 0; }
+}
+
+/* Blood cell float */
+@keyframes cellFloat {
+  0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.6; }
+  33%  { transform: translateY(-18px) translateX(12px) rotate(120deg); opacity: 0.9; }
+  66%  { transform: translateY(-8px) translateX(-8px) rotate(240deg); opacity: 0.7; }
+  100% { transform: translateY(0) translateX(0) rotate(360deg); opacity: 0.6; }
+}
+
+/* Flicker */
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  92%       { opacity: 1; }
+  93%       { opacity: 0.4; }
+  94%       { opacity: 1; }
+  96%       { opacity: 0.6; }
+  97%       { opacity: 1; }
+}
+
+/* Glitch X shift */
+@keyframes glitchX {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-2px); }
+  40%       { transform: translateX(2px); }
+  60%       { transform: translateX(-1px); }
+  80%       { transform: translateX(1px); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   GLOBAL BASE
+   ══════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
 body {
-  background-color: #030712;
-  color: #f1f5f9;
-  font-family: 'Inter', sans-serif;
+  background-color: #F8FBFF;
+  background-image:
+    radial-gradient(ellipse at 15% 5%,  rgba(220, 20,  60,  0.04) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 5%,  rgba(37,  99,  235, 0.05) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 95%, rgba(6,   182, 212, 0.03) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 50%, rgba(239, 246, 255, 0.8)  0%, #F8FBFF 100%);
+  color: #0F172A;
+  font-family: 'Inter', system-ui, sans-serif;
   overflow-x: hidden;
-  background-image: radial-gradient(circle at 50% -20%, #111c3a 0%, #030712 70%);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  letter-spacing: -0.02em;
 }
 
-/* Cyber medical glow utilities */
-.glow-cyan {
-  box-shadow: 0 0 15px rgba(0, 242, 254, 0.25);
-  border: 1px solid rgba(0, 242, 254, 0.4);
+/* ══════════════════════════════════════════════════════════
+   HOSPITAL DYNAMIC ELEMENT CLASSES
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Red Cross Animated ─────────────────────────────────── */
+.red-cross {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.red-cross-pulse {
+  animation: crossPulse 2s ease-in-out infinite;
+}
+.red-cross-heartbeat {
+  animation: heartbeat 1.4s ease-in-out infinite;
 }
 
-.glow-emerald {
-  box-shadow: 0 0 15px rgba(5, 205, 153, 0.2);
-  border: 1px solid rgba(5, 205, 153, 0.4);
+/* ── ECG Line Container ──────────────────────────────────── */
+.ecg-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+.ecg-path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: ecgDraw 3s linear infinite;
 }
 
-.glow-amber {
-  box-shadow: 0 0 15px rgba(255, 184, 0, 0.2);
-  border: 1px solid rgba(255, 184, 0, 0.4);
+/* ── Scan Beam ───────────────────────────────────────────── */
+.scan-beam-wrap {
+  position: relative;
+  overflow: hidden;
+}
+.scan-beam {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 80px;
+  background: linear-gradient(90deg, transparent, rgba(220,20,60,0.12), rgba(220,20,60,0.25), rgba(220,20,60,0.12), transparent);
+  animation: scanBeam 3s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
 }
 
-.glow-red {
-  box-shadow: 0 0 15px rgba(255, 74, 90, 0.25);
-  border: 1px solid rgba(255, 74, 90, 0.4);
+/* ── Blood Drop ──────────────────────────────────────────── */
+.blood-drop {
+  width: 12px;
+  height: 16px;
+  background: radial-gradient(ellipse at 35% 30%, #FF6B6B, #DC143C);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  animation: bloodDrop var(--drop-duration, 2.4s) ease-in var(--drop-delay, 0s) infinite;
+  box-shadow: 0 2px 6px rgba(220, 20, 60, 0.4);
 }
 
-.glassmorphism {
-  background: rgba(11, 19, 41, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+/* ── Vitals Card Glow ────────────────────────────────────── */
+.vitals-glow {
+  animation: vitalsGlow 2s ease-in-out infinite;
+  border-radius: 16px;
 }
 
-.glassmorphism-glow {
-  background: rgba(11, 19, 41, 0.8);
+/* ── Heartbeat Element ───────────────────────────────────── */
+.heartbeat {
+  animation: heartbeat 1.3s ease-in-out infinite;
+  display: inline-block;
+  transform-origin: center;
+}
+
+/* ── Blood Flow Streaks ──────────────────────────────────── */
+.blood-streak {
+  position: absolute;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, rgba(220,20,60,0.6), rgba(220,20,60,0.3), transparent);
+  border-radius: 1px;
+  animation: bloodFlow var(--streak-dur, 4s) linear var(--streak-delay, 0s) infinite;
+  pointer-events: none;
+}
+
+/* ── Orbiting Medical Dot ────────────────────────────────── */
+.orbit-dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #DC143C;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(220, 20, 60, 0.7);
+  animation: orbitRing var(--orbit-dur, 6s) linear infinite;
+  transform-origin: 0 0;
+}
+
+/* ── Data Stream Text ────────────────────────────────────── */
+.data-stream {
+  position: absolute;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: rgba(220, 20, 60, 0.25);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: dataStream var(--stream-dur, 6s) linear var(--stream-delay, 0s) infinite;
+}
+
+/* ── Ripple Ring ─────────────────────────────────────────── */
+.ripple-ring {
+  position: absolute;
+  border: 1.5px solid rgba(220, 20, 60, 0.3);
+  border-radius: 50%;
+  animation: rippleOut var(--ripple-dur, 2s) ease-out var(--ripple-delay, 0s) infinite;
+  pointer-events: none;
+}
+
+/* ── Blood Cell Float ────────────────────────────────────── */
+.blood-cell {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255,80,80,0.8), rgba(180,10,30,0.5));
+  box-shadow: 0 0 6px rgba(220,20,60,0.3);
+  animation: cellFloat var(--cell-dur, 5s) ease-in-out var(--cell-delay, 0s) infinite;
+  pointer-events: none;
+}
+
+/* ── Flicker Text ────────────────────────────────────────── */
+.flicker {
+  animation: flicker 4s step-start infinite;
+}
+
+/* ── Glitch Text ─────────────────────────────────────────── */
+.glitch {
+  animation: glitchX 0.3s ease infinite;
+}
+
+/* ══════════════════════════════════════════════════════════
+   GLASS CARD SYSTEM
+   ══════════════════════════════════════════════════════════ */
+.glass-card {
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 242, 254, 0.15);
-  box-shadow: 0 8px 32px 0 rgba(0, 242, 254, 0.05);
+  border: 1px solid rgba(191, 219, 254, 0.6);
+  box-shadow: 0 4px 24px rgba(37, 99, 235, 0.06), 0 1px 3px rgba(0,0,0,0.04);
+}
+.glass-card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.glass-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(37, 99, 235, 0.10), 0 2px 8px rgba(0,0,0,0.06);
+}
+.glass-card-blue {
+  background: rgba(239, 246, 255, 0.90);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(191, 219, 254, 0.8);
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.08);
 }
 
-.text-glow-cyan {
-  text-shadow: 0 0 8px rgba(0, 242, 254, 0.6);
+/* ── Medical Red Glass Card ──────────────────────────────── */
+.glass-card-red {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(220, 20, 60, 0.2);
+  box-shadow: 0 4px 24px rgba(220, 20, 60, 0.08), 0 1px 3px rgba(0,0,0,0.04);
 }
 
-.text-glow-red {
-  text-shadow: 0 0 8px rgba(255, 74, 90, 0.6);
+/* ══════════════════════════════════════════════════════════
+   HOSPITAL HERO BACKGROUND
+   ══════════════════════════════════════════════════════════ */
+.hospital-hero-bg {
+  position: relative;
+  background:
+    radial-gradient(ellipse at 20% 0%,  rgba(220,20,60,0.06)  0%, transparent 55%),
+    radial-gradient(ellipse at 80% 0%,  rgba(37,99,235,0.07)  0%, transparent 55%),
+    radial-gradient(ellipse at 50% 100%,rgba(6,182,212,0.04)  0%, transparent 45%),
+    linear-gradient(180deg, #FFFFFF 0%, #F8FBFF 50%, #F0F6FF 100%);
+  overflow: hidden;
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* ── Animated cross-grid overlay ────────────────────────── */
+.medical-grid-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(220,20,60,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(220,20,60,0.02) 1px, transparent 1px);
+  background-size: 48px 48px;
 }
 
-::-webkit-scrollbar-track {
-  background: #030712;
+/* ══════════════════════════════════════════════════════════
+   ALERT CARDS
+   ══════════════════════════════════════════════════════════ */
+.alert-red {
+  background: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.08);
+}
+.alert-amber {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.08);
+}
+.alert-green {
+  background: #F0FDF4;
+  border: 1px solid #86EFAC;
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.08);
 }
 
-::-webkit-scrollbar-thumb {
-  background: #1f2937;
-  border-radius: 3px;
+/* ══════════════════════════════════════════════════════════
+   BADGE SYSTEM
+   ══════════════════════════════════════════════════════════ */
+.badge-critical {
+  background: #FEE2E2;
+  color: #DC2626;
+  border: 1px solid #FCA5A5;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.badge-warning {
+  background: #FEF3C7;
+  color: #D97706;
+  border: 1px solid #FDE68A;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.badge-normal {
+  background: #DCFCE7;
+  color: #16A34A;
+  border: 1px solid #86EFAC;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #00f2fe;
+/* ══════════════════════════════════════════════════════════
+   PULSE DOT
+   ══════════════════════════════════════════════════════════ */
+.pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #EF4444;
+  border-radius: 50%;
+  animation: pulseDot 1.8s ease-in-out infinite;
 }
 
-/* Printing styles for Doctor Plan */
+/* ══════════════════════════════════════════════════════════
+   BUTTON SYSTEM
+   ══════════════════════════════════════════════════════════ */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 22px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #FFFFFF;
+  color: #2563EB;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 22px;
+  border-radius: 10px;
+  border: 1.5px solid #BFDBFE;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-secondary:hover {
+  background: #EFF6FF;
+  border-color: #2563EB;
+  transform: translateY(-1px);
+}
+
+.btn-emergency {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #DC143C 0%, #B91C1C 100%);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 22px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(220, 20, 60, 0.35);
+  animation: vitalsGlow 2.5s ease-in-out infinite;
+}
+.btn-emergency:hover {
+  box-shadow: 0 8px 28px rgba(220, 20, 60, 0.5);
+  transform: translateY(-1px);
+}
+
+/* ══════════════════════════════════════════════════════════
+   PROGRESS RING
+   ══════════════════════════════════════════════════════════ */
+.progress-ring-circle {
+  stroke-linecap: round;
+  transform-origin: 50% 50%;
+  transform: rotate(-90deg);
+  transition: stroke-dashoffset 1s ease;
+}
+.ring-normal  { stroke: #22C55E; }
+.ring-warning { stroke: #F59E0B; }
+.ring-critical{ stroke: #DC143C; }
+
+/* ══════════════════════════════════════════════════════════
+   GRADIENT TEXT
+   ══════════════════════════════════════════════════════════ */
+.text-gradient-blue {
+  background: linear-gradient(135deg, #2563EB 0%, #06B6D4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.text-gradient-red {
+  background: linear-gradient(135deg, #DC143C 0%, #EF4444 60%, #F97316 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.text-gradient-medical {
+  background: linear-gradient(135deg, #0F172A 0%, #DC143C 50%, #2563EB 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ══════════════════════════════════════════════════════════
+   INPUT SYSTEM
+   ══════════════════════════════════════════════════════════ */
+.medical-input {
+  width: 100%;
+  background: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #0F172A;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.medical-input:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+.medical-input::placeholder {
+  color: #94A3B8;
+}
+
+/* ══════════════════════════════════════════════════════════
+   DROP ZONE
+   ══════════════════════════════════════════════════════════ */
+.drop-zone {
+  background: #FFFFFF;
+  border: 2px dashed #BFDBFE;
+  border-radius: 16px;
+  transition: all 0.2s ease;
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: #2563EB;
+  background: #EFF6FF;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+}
+
+/* ══════════════════════════════════════════════════════════
+   STEP PIPELINE
+   ══════════════════════════════════════════════════════════ */
+.step-complete {
+  background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
+}
+.step-active {
+  background: linear-gradient(135deg, #DC143C 0%, #B91C1C 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 16px rgba(220, 20, 60, 0.40);
+  animation: vitalsGlow 1.5s ease-in-out infinite;
+}
+.step-pending {
+  background: #F1F5F9;
+  color: #94A3B8;
+  border: 1.5px solid #E2E8F0;
+}
+
+/* ══════════════════════════════════════════════════════════
+   TOP ECG STRIP
+   ══════════════════════════════════════════════════════════ */
+.ecg-strip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #DC143C, #2563EB, #DC143C);
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+  z-index: 9999;
+}
+
+/* ══════════════════════════════════════════════════════════
+   HOSPITAL STATS COUNTER
+   ══════════════════════════════════════════════════════════ */
+.vitals-counter {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* ══════════════════════════════════════════════════════════
+   SCROLLBAR
+   ══════════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #F1F5F9; }
+::-webkit-scrollbar-thumb { background: rgba(220,20,60,0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #DC143C; }
+
+/* ══════════════════════════════════════════════════════════
+   PRINT
+   ══════════════════════════════════════════════════════════ */
 @media print {
-  body {
-    background: white !important;
-    color: black !important;
-    font-size: 12pt;
-    font-family: 'Inter', sans-serif !important;
-  }
-  
-  .no-print {
-    display: none !important;
-  }
-  
-  .print-only {
-    display: block !important;
-  }
-  
-  .print-card {
-    background: white !important;
-    border: 1px solid #ccc !important;
-    color: black !important;
-    box-shadow: none !important;
-    page-break-inside: avoid;
-  }
+  body { background: white !important; color: black !important; font-family: 'Inter', sans-serif !important; }
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  .print-card { background: white !important; border: 1px solid #ccc !important; color: black !important; box-shadow: none !important; page-break-inside: avoid; }
+  .ecg-strip { display: none; }
 }
