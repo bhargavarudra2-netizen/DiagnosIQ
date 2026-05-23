@@ -1,143 +1,125 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Shield, Activity, Sparkles } from 'lucide-react';
 
 /* ══════════════════════════════════════════════════════════
-   HOSPITAL DYNAMIC EFFECTS COMPONENT LIBRARY
-   Interactive Red Cross · Blood Effects · ECG · Vitals
+   DIAGNOSIQ PREMIUM VISUAL EFFECTS COMPONENT LIBRARY
+   Apple Health + Linear inspired minimalist healthcare visual components
    ══════════════════════════════════════════════════════════ */
 
-/* ── 1. Animated Red Cross SVG ───────────────────────────── */
-export function AnimatedRedCross({ size = 48, pulse = true, spin = false, glow = true, className = '' }) {
+/* ── 1. Animated DiagnosIQ Logo Emblem ───────────────────── */
+export function AnimatedRedCross({ size = 32, pulse = true, spin = false, glow = true, className = '' }) {
   return (
     <div
-      className={`relative inline-flex items-center justify-center ${pulse ? 'red-cross-pulse' : ''} ${className}`}
+      className={`relative inline-flex items-center justify-center ${className}`}
       style={{ width: size, height: size }}
     >
-      {/* Outer orbit ring */}
-      {spin && (
-        <svg
-          className="absolute inset-0 w-full h-full"
-          viewBox="0 0 100 100"
-          style={{ animation: 'crossSpin 8s linear infinite' }}
-        >
-          <circle
-            cx="50" cy="50" r="44"
-            fill="none"
-            stroke="rgba(220,20,60,0.2)"
-            strokeWidth="1"
-            strokeDasharray="6,4"
-          />
-          <circle cx="50" cy="6" r="4" fill="#DC143C" opacity="0.8" />
-        </svg>
-      )}
-      {/* Ripple rings */}
-      {glow && [1, 2, 3].map(i => (
+      {/* Outer subtle halo ring */}
+      {glow && (
         <div
-          key={i}
-          className="ripple-ring"
+          className={`absolute inset-0 rounded-xl border border-diag-cyan/20 ${pulse ? 'animate-pulse' : ''}`}
           style={{
-            width: size * 0.9,
-            height: size * 0.9,
-            left: '5%', top: '5%',
-            '--ripple-dur': `${1.8 + i * 0.5}s`,
-            '--ripple-delay': `${(i - 1) * 0.5}s`,
+            boxShadow: '0 0 16px rgba(56, 189, 248, 0.15)',
+            background: 'rgba(56, 189, 248, 0.02)',
           }}
         />
-      ))}
-      {/* Cross shape */}
-      <svg viewBox="0 0 100 100" width={size} height={size}>
+      )}
+      
+      {/* Sleek, minimalistic medical shield/cross emblem */}
+      <svg
+        viewBox="0 0 100 100"
+        width={size * 0.8}
+        height={size * 0.8}
+        className={pulse ? 'red-cross-heartbeat' : ''}
+      >
         <defs>
-          <radialGradient id={`crossGrad-${size}`} cx="50%" cy="50%" r="50%">
-            <stop offset="0%"   stopColor="#FF4444" />
-            <stop offset="60%"  stopColor="#DC143C" />
-            <stop offset="100%" stopColor="#8B0000" />
-          </radialGradient>
-          <filter id={`crossGlow-${size}`}>
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#38BDF8" />
+            <stop offset="100%" stopColor="#0EA5E9" />
+          </linearGradient>
+          <filter id="logoGlow">
+            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
           </filter>
         </defs>
-        {/* Cross arms */}
+        
+        {/* Soft cyan clean clinical cross */}
         <rect
-          x="35" y="10" width="30" height="80" rx="6"
-          fill={`url(#crossGrad-${size})`}
-          filter={glow ? `url(#crossGlow-${size})` : ''}
+          x="38" y="15" width="24" height="70" rx="8"
+          fill="url(#logoGrad)"
+          filter={glow ? 'url(#logoGlow)' : ''}
         />
         <rect
-          x="10" y="35" width="80" height="30" rx="6"
-          fill={`url(#crossGrad-${size})`}
-          filter={glow ? `url(#crossGlow-${size})` : ''}
+          x="15" y="38" width="70" height="24" rx="8"
+          fill="url(#logoGrad)"
+          filter={glow ? 'url(#logoGlow)' : ''}
         />
-        {/* White shine */}
-        <rect x="45" y="12" width="8" height="20" rx="3" fill="rgba(255,255,255,0.3)" />
-        <rect x="12" y="45" width="20" height="8" rx="3" fill="rgba(255,255,255,0.3)" />
+        
+        {/* Modern central neural dot representing AI */}
+        <circle cx="50" cy="50" r="7" fill="var(--diag-bg)" />
+        <circle cx="50" cy="50" r="4" fill="var(--diag-cyan)" />
       </svg>
     </div>
   );
 }
 
-/* ── 2. ECG / Cardiogram Strip ───────────────────────────── */
-export function ECGStrip({ color = '#DC143C', height = 60, className = '' }) {
+/* ── 2. Sleek ECG / Heartbeat Wave ───────────────────────── */
+export function ECGStrip({ color = '#38BDF8', height = 40, className = '' }) {
   return (
-    <div className={`ecg-container ${className}`} style={{ height }}>
+    <div className={`ecg-container relative z-10 overflow-hidden w-full ${className}`} style={{ height }}>
       <svg
-        viewBox="0 0 800 60"
+        viewBox="0 0 800 40"
         preserveAspectRatio="none"
         width="100%"
         height={height}
         style={{ display: 'block' }}
       >
         <defs>
-          <linearGradient id="ecgFade" x1="0%" x2="100%">
-            <stop offset="0%"   stopColor={color} stopOpacity="0" />
-            <stop offset="15%"  stopColor={color} stopOpacity="1" />
-            <stop offset="85%"  stopColor={color} stopOpacity="1" />
+          <linearGradient id="ecgLineFade" x1="0%" x2="100%">
+            <stop offset="0%" stopColor={color} stopOpacity="0" />
+            <stop offset="15%" stopColor={color} stopOpacity="0.4" />
+            <stop offset="50%" stopColor={color} stopOpacity="0.9" />
+            <stop offset="85%" stopColor={color} stopOpacity="0.4" />
             <stop offset="100%" stopColor={color} stopOpacity="0" />
           </linearGradient>
-          <filter id="ecgGlow">
-            <feGaussianBlur stdDeviation="2" result="b" />
-            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+          <filter id="ecgLineGlow">
+            <feGaussianBlur stdDeviation="1.5" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
           </filter>
         </defs>
-        {/* Grid */}
-        <g opacity="0.06">
+        
+        {/* Thin grids */}
+        <g opacity="0.02">
           {Array.from({ length: 40 }).map((_, i) => (
-            <line key={i} x1={i * 20} y1="0" x2={i * 20} y2="60" stroke={color} strokeWidth="0.5" />
+            <line key={i} x1={i * 20} y1="0" x2={i * 20} y2="40" stroke="#FFF" strokeWidth="0.5" />
           ))}
-          {[15, 30, 45].map(y => (
-            <line key={y} x1="0" y1={y} x2="800" y2={y} stroke={color} strokeWidth="0.5" />
+          {[10, 20, 30].map(y => (
+            <line key={y} x1="0" y1={y} x2="800" y2={y} stroke="#FFF" strokeWidth="0.5" />
           ))}
         </g>
-        {/* ECG Path — P-QRS-T complex repeated */}
+        
+        {/* Clean, calm cardiogram path */}
         <path
-          className="ecg-path"
-          d="M0,30 L60,30 L70,30 L75,22 L80,30 L90,30
-             L100,30 L104,28 L106,5 L108,55 L112,30 L116,35 L120,30
-             L160,30 L170,30 L175,22 L180,30 L190,30
-             L200,30 L204,28 L206,5 L208,55 L212,30 L216,35 L220,30
-             L260,30 L270,30 L275,22 L280,30 L290,30
-             L300,30 L304,28 L306,5 L308,55 L312,30 L316,35 L320,30
-             L360,30 L370,30 L375,22 L380,30 L390,30
-             L400,30 L404,28 L406,5 L408,55 L412,30 L416,35 L420,30
-             L460,30 L470,30 L475,22 L480,30 L490,30
-             L500,30 L504,28 L506,5 L508,55 L512,30 L516,35 L520,30
-             L560,30 L570,30 L575,22 L580,30 L590,30
-             L600,30 L604,28 L606,5 L608,55 L612,30 L616,35 L620,30
-             L660,30 L670,30 L675,22 L680,30 L690,30
-             L700,30 L704,28 L706,5 L708,55 L712,30 L716,35 L720,30
-             L800,30"
-          stroke="url(#ecgFade)"
-          strokeWidth="2"
+          d="M0,20 L80,20 L90,20 L95,14 L100,20 L106,20 L110,18 L112,4 L114,36 L118,20 L122,23 L125,20 L240,20 L250,20 L255,14 L260,20 L266,20 L270,18 L272,4 L274,36 L278,20 L282,23 L285,20 L400,20 L410,20 L415,14 L420,20 L426,20 L430,18 L432,4 L434,36 L438,20 L442,23 L445,20 L560,20 L570,20 L575,14 L580,20 L586,20 L590,18 L592,4 L594,36 L598,20 L602,23 L605,20 L720,20 L730,20 L735,14 L740,20 L746,20 L750,18 L752,4 L754,36 L758,20 L762,23 L765,20 L800,20"
+          stroke="url(#ecgLineFade)"
+          strokeWidth="1.5"
           fill="none"
           strokeLinecap="round"
           strokeLinejoin="round"
-          filter="url(#ecgGlow)"
+          filter="url(#ecgLineGlow)"
         />
-        {/* Moving dot */}
-        <circle r="4" fill={color} filter="url(#ecgGlow)" opacity="0.9">
+        
+        {/* Elegant glowing active sweep dot */}
+        <circle r="2.5" fill={color} filter="url(#ecgLineGlow)" opacity="0.8">
           <animateMotion
-            dur="3s"
+            dur="4s"
             repeatCount="indefinite"
-            path="M0,30 L60,30 L70,30 L75,22 L80,30 L90,30 L100,30 L104,28 L106,5 L108,55 L112,30 L116,35 L120,30 L160,30 L170,30 L175,22 L180,30 L190,30 L200,30 L204,28 L206,5 L208,55 L212,30 L216,35 L220,30 L260,30 L270,30 L275,22 L280,30 L290,30 L300,30 L304,28 L306,5 L308,55 L312,30 L316,35 L320,30 L360,30 L370,30 L375,22 L380,30 L390,30 L400,30 L404,28 L406,5 L408,55 L412,30 L416,35 L420,30 L460,30 L470,30 L475,22 L480,30 L490,30 L500,30 L504,28 L506,5 L508,55 L512,30 L516,35 L520,30 L560,30 L570,30 L575,22 L580,30 L590,30 L600,30 L604,28 L606,5 L608,55 L612,30 L616,35 L620,30 L660,30 L670,30 L675,22 L680,30 L690,30 L700,30 L704,28 L706,5 L708,55 L712,30 L716,35 L720,30 L800,30"
+            path="M0,20 L80,20 L90,20 L95,14 L100,20 L106,20 L110,18 L112,4 L114,36 L118,20 L122,23 L125,20 L240,20 L250,20 L255,14 L260,20 L266,20 L270,18 L272,4 L274,36 L278,20 L282,23 L285,20 L400,20 L410,20 L415,14 L420,20 L426,20 L430,18 L432,4 L434,36 L438,20 L442,23 L445,20 L560,20 L570,20 L575,14 L580,20 L586,20 L590,18 L592,4 L594,36 L598,20 L602,23 L605,20 L720,20 L730,20 L735,14 L740,20 L746,20 L750,18 L752,4 L754,36 L758,20 L762,23 L765,20 L800,20"
           />
         </circle>
       </svg>
@@ -145,237 +127,148 @@ export function ECGStrip({ color = '#DC143C', height = 60, className = '' }) {
   );
 }
 
-/* ── 3. Blood Drop Particle System ───────────────────────── */
-const BLOOD_DROPS = Array.from({ length: 8 }, (_, i) => ({
-  id: i,
-  left: `${8 + i * 12}%`,
-  duration: `${1.8 + Math.random() * 1.4}s`,
-  delay: `${i * 0.3}s`,
-  size: 8 + Math.floor(Math.random() * 8),
-}));
-
-export function BloodDrops({ count = 8, className = '' }) {
-  const drops = BLOOD_DROPS.slice(0, count);
-  return (
-    <div className={`relative pointer-events-none ${className}`} style={{ height: 80 }}>
-      {drops.map(d => (
-        <div
-          key={d.id}
-          className="blood-drop absolute"
-          style={{
-            left: d.left,
-            top: 0,
-            width: d.size,
-            height: d.size * 1.3,
-            '--drop-duration': d.duration,
-            '--drop-delay': d.delay,
-          }}
-        />
-      ))}
-    </div>
-  );
+/* ── 3. Blood Drops (REMOVED: Wiped cyber gaming visual) ── */
+export function BloodDrops() {
+  return null;
 }
 
-/* ── 4. Floating Blood Cells Background ──────────────────── */
-const CELLS = Array.from({ length: 12 }, (_, i) => ({
-  id: i,
-  size: 6 + Math.floor(Math.random() * 10),
-  left: `${Math.random() * 90}%`,
-  top: `${Math.random() * 90}%`,
-  dur: `${4 + Math.random() * 4}s`,
-  delay: `${Math.random() * 3}s`,
-}));
-
-export function BloodCells({ className = '' }) {
-  return (
-    <div className={`absolute inset-0 pointer-events-none overflow-hidden ${className}`}>
-      {CELLS.map(c => (
-        <div
-          key={c.id}
-          className="blood-cell"
-          style={{
-            width: c.size,
-            height: c.size,
-            left: c.left,
-            top: c.top,
-            '--cell-dur': c.dur,
-            '--cell-delay': c.delay,
-          }}
-        />
-      ))}
-    </div>
-  );
+/* ── 4. Blood Cells (REMOVED: Wiped cyber gaming visual) ── */
+export function BloodCells() {
+  return null;
 }
 
-/* ── 5. Blood Streak Streaks (side decoration) ───────────── */
-const STREAKS = [
-  { left: '2%',  height: 120, dur: '3.5s', delay: '0s' },
-  { left: '6%',  height:  80, dur: '4.2s', delay: '0.6s' },
-  { left: '92%', height: 100, dur: '3.8s', delay: '1.2s' },
-  { left: '96%', height:  70, dur: '4.5s', delay: '0.3s' },
-];
-
-export function BloodStreaks({ className = '' }) {
-  return (
-    <div className={`absolute inset-0 pointer-events-none overflow-hidden ${className}`}>
-      {STREAKS.map((s, i) => (
-        <div
-          key={i}
-          className="blood-streak"
-          style={{
-            left: s.left,
-            height: s.height,
-            top: '10%',
-            '--streak-dur': s.dur,
-            '--streak-delay': s.delay,
-          }}
-        />
-      ))}
-    </div>
-  );
+/* ── 5. Blood Streaks (REMOVED: Wiped cyber gaming visual) ── */
+export function BloodStreaks() {
+  return null;
 }
 
-/* ── 6. Data Stream (Matrix-style medical data) ──────────── */
-const MEDICAL_DATA_STRINGS = [
-  'Hb:8.5 g/dL', 'TROP:2.4', 'Na+:129', 'GLU:310',
-  'PLT:42K', 'Cr:3.2', 'LDL:215', 'K+:5.8',
-  'WBC:↑', 'RBC:↓', 'INR:2.1', 'HbA1c:9.2%',
-];
-
-export function DataStreams({ count = 6, className = '' }) {
-  return (
-    <div className={`absolute inset-0 pointer-events-none overflow-hidden ${className}`}>
-      {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={i}
-          className="data-stream"
-          style={{
-            left: `${5 + i * 15}%`,
-            top: `-20px`,
-            '--stream-dur': `${5 + Math.random() * 4}s`,
-            '--stream-delay': `${i * 0.8}s`,
-            opacity: 0.18 + i * 0.02,
-          }}
-        >
-          {MEDICAL_DATA_STRINGS[i % MEDICAL_DATA_STRINGS.length]}
-        </div>
-      ))}
-    </div>
-  );
+/* ── 6. Data Streams (REMOVED: Wiped cyber matrix visual) ── */
+export function DataStreams() {
+  return null;
 }
 
-/* ── 7. Animated Vitals Monitor Card ─────────────────────── */
+/* ── 7. Minimal, High-End Live Vitals Widget ─────────────── */
 export function VitalsMonitor({ bpm = 72, spo2 = 98, bp = '120/80', temp = 98.6, className = '' }) {
   const [currentBpm, setCurrentBpm] = useState(bpm);
-  const [beat, setBeat] = useState(false);
+  const [pulseActive, setPulseActive] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      // Simulate slight BPM variation
       setCurrentBpm(prev => {
-        const delta = Math.floor(Math.random() * 5) - 2;
-        return Math.max(60, Math.min(120, prev + delta));
+        const delta = Math.floor(Math.random() * 3) - 1;
+        return Math.max(65, Math.min(95, prev + delta));
       });
-      setBeat(true);
-      setTimeout(() => setBeat(false), 300);
-    }, 60000 / bpm);
+      setPulseActive(true);
+      setTimeout(() => setPulseActive(false), 200);
+    }, (60 * 1000) / bpm);
     return () => clearInterval(interval);
   }, [bpm]);
 
-  const vitals = [
-    { label: 'HEART RATE',   value: currentBpm, unit: 'BPM',  color: '#DC143C', beat: true },
-    { label: 'SpO₂',         value: spo2,        unit: '%',    color: '#2563EB', beat: false },
-    { label: 'BLOOD PRESS.', value: bp,          unit: 'mmHg', color: '#7C3AED', beat: false },
-    { label: 'TEMP',         value: temp,        unit: '°F',   color: '#F59E0B', beat: false },
+  const stats = [
+    { label: 'Heart Rate', value: currentBpm, unit: 'BPM', color: '#38BDF8', pulse: pulseActive },
+    { label: 'Oxygen SpO₂', value: spo2, unit: '%', color: '#10B981', pulse: false },
+    { label: 'Blood Press.', value: bp, unit: 'mmHg', color: '#818CF8', pulse: false },
+    { label: 'Body Temp.', value: temp, unit: '°F', color: '#F59E0B', pulse: false },
   ];
 
   return (
-    <div className={`glass-card-red rounded-2xl p-4 ${className}`}>
-      <div className="flex items-center gap-2 mb-3">
-        <span className="pulse-dot" />
-        <span className="text-[10px] font-black text-red-600 uppercase tracking-widest">
-          Live Vitals Monitor
+    <div className={`glass-card rounded-2xl p-4 border border-white/5 cyan-glow-subtle ${className}`}>
+      <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+          <Activity className="h-3 w-3 text-diag-cyan" />
+          Clinical Vitals telemetry
+        </span>
+        <span className="text-[9px] font-bold text-diag-emerald bg-diag-emeraldSoft px-2 py-0.5 rounded-full uppercase tracking-wider">
+          Stable
         </span>
       </div>
+      
       <div className="grid grid-cols-4 gap-2">
-        {vitals.map((v, i) => (
-          <div key={i} className="text-center p-2 rounded-xl" style={{ background: `${v.color}08`, border: `1px solid ${v.color}20` }}>
+        {stats.map((s, idx) => (
+          <div
+            key={idx}
+            className="p-2.5 rounded-xl border border-white/5 text-center flex flex-col justify-between"
+            style={{ background: 'rgba(255, 255, 255, 0.01)' }}
+          >
             <div
-              className={`text-lg font-black vitals-counter ${v.beat && beat ? 'heartbeat' : ''}`}
-              style={{ color: v.color, display: 'inline-block' }}
+              className={`text-base font-bold vitals-counter transition-all duration-300 ${s.pulse ? 'scale-105 text-diag-cyan' : ''}`}
+              style={{ color: s.color, fontFamily: 'JetBrains Mono, monospace' }}
             >
-              {v.value}
+              {s.value}
             </div>
-            <div className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">{v.unit}</div>
-            <div className="text-[8px] font-semibold text-slate-400 mt-0.5">{v.label}</div>
+            <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wide mt-1">{s.unit}</div>
+            <div className="text-[8px] font-semibold text-slate-400 mt-0.5">{s.label}</div>
           </div>
         ))}
       </div>
-      <ECGStrip color="#DC143C" height={32} className="mt-2" />
     </div>
   );
 }
 
-/* ── 8. Hospital Status Badge ────────────────────────────── */
+/* ── 8. Elegant Startup-grade Status Badge ──────────────── */
 export function HospitalStatusBadge({ status = 'OPERATIONAL', className = '' }) {
-  const configs = {
-    OPERATIONAL: { color: '#22C55E', bg: '#F0FDF4', label: '● SYSTEM OPERATIONAL' },
-    SCANNING:    { color: '#2563EB', bg: '#EFF6FF', label: '◉ SCANNING ACTIVE' },
-    ALERT:       { color: '#DC143C', bg: '#FEF2F2', label: '⚠ CRITICAL ALERT' },
-    STANDBY:     { color: '#F59E0B', bg: '#FFFBEB', label: '◎ STANDBY MODE' },
+  const badgeConfig = {
+    OPERATIONAL: { color: '#10B981', bg: 'rgba(16,185,129,0.06)', label: 'DiagnosIQ Active' },
+    SCANNING:    { color: '#38BDF8', bg: 'rgba(56,189,248,0.06)', label: 'Assay Pipeline Active' },
+    ALERT:       { color: '#EF4444', bg: 'rgba(239,68,68,0.06)',  label: 'Emergency Alert' },
+    STANDBY:     { color: '#F59E0B', bg: 'rgba(245,158,11,0.06)',  label: 'Clinical Standby' },
   };
-  const c = configs[status] || configs.OPERATIONAL;
+  const cfg = badgeConfig[status] || badgeConfig.OPERATIONAL;
+  
   return (
     <div
-      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${className}`}
-      style={{ background: c.bg, color: c.color, border: `1px solid ${c.color}30` }}
+      className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-semibold tracking-wider border ${className}`}
+      style={{
+        backgroundColor: cfg.bg,
+        color: cfg.color,
+        borderColor: `${cfg.color}15`,
+      }}
     >
-      <span style={{ animation: status === 'ALERT' ? 'pulseDot 1s ease-in-out infinite' : 'none' }}>
-        {c.label}
+      <span className="relative flex h-1.5 w-1.5 shrink-0">
+        {status === 'ALERT' || status === 'SCANNING' ? (
+          <span
+            className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+            style={{ backgroundColor: cfg.color }}
+          />
+        ) : null}
+        <span
+          className="relative inline-flex rounded-full h-1.5 w-1.5"
+          style={{ backgroundColor: cfg.color }}
+        />
       </span>
+      {cfg.label}
     </div>
   );
 }
 
-/* ── 9. Interactive Red Cross Button ─────────────────────── */
+/* ── 9. Interactive Red Cross Button (Minimal) ───────────── */
 export function RedCrossButton({ onClick, label = 'Emergency Mode', size = 'md', className = '' }) {
-  const [hover, setHover] = useState(false);
-  const sizes = {
-    sm: { wrap: 36, cross: 20, text: '10px' },
-    md: { wrap: 52, cross: 28, text: '12px' },
-    lg: { wrap: 72, cross: 40, text: '14px' },
+  const buttonSizes = {
+    sm: { size: 30, text: 'text-[10px]' },
+    md: { size: 40, text: 'text-xs' },
+    lg: { size: 54, text: 'text-sm' },
   };
-  const s = sizes[size];
+  const s = buttonSizes[size] || buttonSizes.md;
+  
   return (
     <button
       onClick={onClick}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      className={`group flex flex-col items-center gap-1.5 ${className}`}
-      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+      className={`flex flex-col items-center gap-1.5 group focus:outline-none transition-transform active:scale-95 ${className}`}
     >
       <div
-        style={{
-          width: s.wrap, height: s.wrap,
-          borderRadius: '50%',
-          background: hover ? 'rgba(220,20,60,0.12)' : 'rgba(220,20,60,0.06)',
-          border: '1.5px solid rgba(220,20,60,0.3)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'all 0.2s ease',
-          boxShadow: hover ? '0 0 20px rgba(220,20,60,0.25)' : '0 0 8px rgba(220,20,60,0.1)',
-          animation: 'crossPulse 2.5s ease-in-out infinite',
-        }}
+        className="rounded-xl border border-white/5 flex items-center justify-center transition-all bg-white/[0.02] group-hover:bg-white/[0.05] group-hover:border-white/10"
+        style={{ width: s.size, height: s.size }}
       >
-        <AnimatedRedCross size={s.cross} pulse={false} glow={false} spin={false} />
+        <AnimatedRedCross size={s.size * 0.7} pulse={false} glow={false} spin={false} />
       </div>
-      <span style={{ fontSize: s.text, fontWeight: 700, color: '#DC143C', letterSpacing: '0.04em' }}>
+      <span className={`${s.text} font-bold text-slate-400 group-hover:text-slate-200 transition-colors uppercase tracking-widest`}>
         {label}
       </span>
     </button>
   );
 }
 
-/* ── 10. Medical Particle Canvas ─────────────────────────── */
+/* ── 10. Calm, Sophisticated Medical Particle Grid ──────── */
 export function MedicalParticleField({ className = '' }) {
   const canvasRef = useRef(null);
 
@@ -383,89 +276,170 @@ export function MedicalParticleField({ className = '' }) {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    const W = canvas.width = canvas.offsetWidth;
-    const H = canvas.height = canvas.offsetHeight;
+    
+    let W = canvas.width = canvas.offsetWidth;
+    let H = canvas.height = canvas.offsetHeight;
 
-    const particles = Array.from({ length: 40 }, () => ({
+    const handleResize = () => {
+      if (canvas) {
+        W = canvas.width = canvas.offsetWidth;
+        H = canvas.height = canvas.offsetHeight;
+      }
+    };
+    window.addEventListener('resize', handleResize);
+
+    // Ultra-faint floating node particles
+    const nodes = Array.from({ length: 24 }, () => ({
       x: Math.random() * W,
       y: Math.random() * H,
-      r: 1 + Math.random() * 2.5,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      color: Math.random() > 0.6
-        ? `rgba(220,20,60,${0.15 + Math.random() * 0.25})`
-        : `rgba(37,99,235,${0.10 + Math.random() * 0.20})`,
+      r: 1 + Math.random() * 1.5,
+      vx: (Math.random() - 0.5) * 0.15,
+      vy: (Math.random() - 0.5) * 0.15,
     }));
 
-    let raf;
-    const draw = () => {
+    let animationId;
+    const render = () => {
       ctx.clearRect(0, 0, W, H);
-      particles.forEach(p => {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0 || p.x > W) p.vx *= -1;
-        if (p.y < 0 || p.y > H) p.vy *= -1;
+      
+      // Draw nodes
+      nodes.forEach(n => {
+        n.x += n.vx;
+        n.y += n.vy;
+        
+        if (n.x < 0 || n.x > W) n.vx *= -1;
+        if (n.y < 0 || n.y > H) n.vy *= -1;
+        
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.12)';
         ctx.fill();
       });
-      // Draw connections
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
+
+      // Draw faint connection mesh
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 80) {
+          
+          if (dist < 100) {
             ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(220,20,60,${0.06 * (1 - dist / 80)})`;
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.strokeStyle = `rgba(56, 189, 248, ${0.04 * (1 - dist / 100)})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
         }
       }
-      raf = requestAnimationFrame(draw);
+      
+      animationId = requestAnimationFrame(render);
     };
-    draw();
-    return () => cancelAnimationFrame(raf);
+
+    render();
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationId);
+    };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
-      className={`absolute inset-0 pointer-events-none ${className}`}
-      style={{ width: '100%', height: '100%' }}
+      className={`absolute inset-0 pointer-events-none select-none opacity-50 ${className}`}
     />
   );
 }
 
-/* ── 11. Floating Hospital Cross Decorations ─────────────── */
-export function FloatingCrosses({ className = '' }) {
-  const crosses = [
-    { size: 16, top: '8%',  left: '3%',  opacity: 0.12, dur: '6s', delay: '0s' },
-    { size: 12, top: '25%', right: '4%', opacity: 0.10, dur: '8s', delay: '1s' },
-    { size: 20, top: '60%', left: '2%',  opacity: 0.08, dur: '7s', delay: '2s' },
-    { size: 10, top: '80%', right: '3%', opacity: 0.12, dur: '5s', delay: '0.5s' },
-    { size: 14, top: '45%', left: '5%',  opacity: 0.09, dur: '9s', delay: '1.5s' },
-  ];
+/* ── 11. Floating Crosses (REMOVED: Gaming aesthetic) ────── */
+export function FloatingCrosses() {
+  return null;
+}
+
+/* ── 12. Premium Glowing Background ECG Graph ─────────────── */
+export function BackgroundECGGraph({ className = '' }) {
   return (
-    <div className={`absolute inset-0 pointer-events-none overflow-hidden ${className}`}>
-      {crosses.map((c, i) => (
-        <div
-          key={i}
-          style={{
-            position: 'absolute',
-            top: c.top,
-            left: c.left,
-            right: c.right,
-            opacity: c.opacity,
-            animation: `float ${c.dur} ease-in-out ${c.delay} infinite`,
-          }}
-        >
-          <AnimatedRedCross size={c.size} pulse={false} glow={false} spin={false} />
-        </div>
-      ))}
+    <div
+      className={`absolute inset-x-0 top-1/4 h-[300px] pointer-events-none select-none overflow-hidden z-0 opacity-40 ${className}`}
+      style={{
+        maskImage: 'radial-gradient(ellipse at 50% 50%, black 20%, transparent 80%)',
+        WebkitMaskImage: 'radial-gradient(ellipse at 50% 50%, black 20%, transparent 80%)',
+      }}
+    >
+      <div className="absolute inset-0 opacity-30">
+        <svg width="100%" height="100%">
+          <defs>
+            <pattern id="smallGrid" width="15" height="15" patternUnits="userSpaceOnUse">
+              <path d="M 15 0 L 0 0 0 15" fill="none" stroke="var(--diag-grid-line)" strokeWidth="0.5" />
+            </pattern>
+            <pattern id="grid" width="75" height="75" patternUnits="userSpaceOnUse">
+              <rect width="75" height="75" fill="url(#smallGrid)" />
+              <path d="M 75 0 L 0 0 0 75" fill="none" stroke="var(--diag-grid-bold)" strokeWidth="1" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" />
+        </svg>
+      </div>
+
+      {/* Repeating clinical ECG waves */}
+      <svg
+        viewBox="0 0 1600 300"
+        preserveAspectRatio="none"
+        width="100%"
+        height="100%"
+        className="absolute inset-0"
+      >
+        <defs>
+          <linearGradient id="backEcgGrad" x1="0%" x2="100%">
+            <stop offset="0%" stopColor="var(--diag-cyan)" stopOpacity="0.05" />
+            <stop offset="30%" stopColor="var(--diag-cyan)" stopOpacity="0.25" />
+            <stop offset="50%" stopColor="var(--diag-cyan)" stopOpacity="0.5" />
+            <stop offset="70%" stopColor="var(--diag-cyan)" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="var(--diag-cyan)" stopOpacity="0.05" />
+          </linearGradient>
+          <filter id="backEcgGlow">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        {/* Dynamic sweeping pulse path */}
+        <path
+          d="M0,150 L180,150 L200,150 L210,135 L220,150 L230,150 L234,145 L238,50 L242,250 L246,150 L250,158 L254,150 L380,150 L400,150 L410,135 L420,150 L430,150 L434,145 L438,50 L442,250 L446,150 L450,158 L454,150 L580,150 L600,150 L610,135 L620,150 L630,150 L634,145 L638,50 L642,250 L646,150 L650,158 L654,150 L780,150 L800,150 L810,135 L820,150 L830,150 L834,145 L838,50 L842,250 L846,150 L850,158 L854,150 L980,150 L1000,150 L1010,135 L1020,150 L1030,150 L1034,145 L1038,50 L1042,250 L1046,150 L1050,158 L1054,150 L1180,150 L1200,150 L1210,135 L1220,150 L1230,150 L1234,145 L1238,50 L1242,250 L1246,150 L1250,158 L1254,150 L1380,150 L1400,150 L1410,135 L1420,150 L1430,150 L1434,145 L1438,50 L1442,250 L1446,150 L1450,158 L1454,150 L1600,150"
+          stroke="url(#backEcgGrad)"
+          strokeWidth="2.5"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          filter="url(#backEcgGlow)"
+          className="ecg-path"
+        />
+
+        {/* Dynamic sweeping spotlight gradient that moves left to right */}
+        <mask id="sweepMask">
+          <rect width="1600" height="300" fill="#000" />
+          <circle r="120" fill="#FFF">
+            <animateMotion
+              dur="6s"
+              repeatCount="indefinite"
+              path="M-100,150 L1700,150"
+            />
+          </circle>
+        </mask>
+        <path
+          d="M0,150 L180,150 L200,150 L210,135 L220,150 L230,150 L234,145 L238,50 L242,250 L246,150 L250,158 L254,150 L380,150 L400,150 L410,135 L420,150 L430,150 L434,145 L438,50 L442,250 L446,150 L450,158 L454,150 L580,150 L600,150 L610,135 L620,150 L630,150 L634,145 L638,50 L642,250 L646,150 L650,158 L654,150 L780,150 L800,150 L810,135 L820,150 L830,150 L834,145 L838,50 L842,250 L846,150 L850,158 L854,150 L980,150 L1000,150 L1010,135 L1020,150 L1030,150 L1034,145 L1038,50 L1042,250 L1046,150 L1050,158 L1054,150 L1180,150 L1200,150 L1210,135 L1220,150 L1230,150 L1234,145 L1238,50 L1242,250 L1246,150 L1250,158 L1254,150 L1380,150 L1400,150 L1410,135 L1420,150 L1430,150 L1434,145 L1438,50 L1442,250 L1446,150 L1450,158 L1454,150 L1600,150"
+          stroke="var(--diag-cyan)"
+          strokeWidth="3.5"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          filter="url(#backEcgGlow)"
+          mask="url(#sweepMask)"
+        />
+      </svg>
     </div>
   );
 }

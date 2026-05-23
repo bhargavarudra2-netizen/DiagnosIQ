@@ -6,10 +6,10 @@ import {
 import { getHospitalsForReport, buildDirectionsUrl } from '../services/hospitalService';
 
 /* ══════════════════════════════════════════════════════════
-   HOSPITAL RECOMMENDATION PANEL
+   HOSPITAL RECOMMENDATION PANEL — Dark Theme
    ══════════════════════════════════════════════════════════ */
 
-// ── Star Rating renderer ────────────────────────────────────
+// ── Star Rating ──────────────────────────────────────────────
 function StarRating({ rating }) {
   const full = Math.floor(rating);
   const half = rating - full >= 0.5;
@@ -23,21 +23,21 @@ function StarRating({ rating }) {
               ? 'text-amber-400 fill-amber-400'
               : i === full + 1 && half
               ? 'text-amber-300 fill-amber-300'
-              : 'text-slate-300'
+              : 'text-slate-700'
           }`}
         />
       ))}
-      <span className="text-[10px] font-bold text-slate-500 ml-1">{rating.toFixed(1)}</span>
+      <span className="text-[10px] font-bold text-slate-400 ml-1">{rating.toFixed(1)}</span>
     </div>
   );
 }
 
-// ── Individual Hospital Card ─────────────────────────────────
+// ── Hospital card ───────────────────────────────────────────
 function HospitalCard({ hospital, userLocation, index, riskLevel }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), index * 100 + 50);
+    const t = setTimeout(() => setVisible(true), index * 80 + 50);
     return () => clearTimeout(t);
   }, [index]);
 
@@ -48,63 +48,59 @@ function HospitalCard({ hospital, userLocation, index, riskLevel }) {
   return (
     <div
       className={`rounded-2xl p-4 border transition-all duration-500 ${
-        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
+        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
       } ${
         isEmergency && isCritical
-          ? 'bg-red-50 border-red-200 hover:border-red-300'
-          : 'bg-white border-slate-200 hover:border-blue-200 hover:bg-blue-50/30'
+          ? 'bg-diag-redSoft/5 border-diag-red/20'
+          : 'bg-white/[0.01] border-white/5 hover:border-diag-cyan/20 hover:bg-diag-cyan/[0.01]'
       }`}
       style={{
         boxShadow: isEmergency && isCritical
-          ? '0 0 0 1px rgba(239,68,68,0.1), 0 4px 16px rgba(239,68,68,0.06)'
-          : '0 2px 8px rgba(0,0,0,0.04)',
-        transitionProperty: 'opacity, transform',
+          ? '0 0 16px rgba(239,68,68,0.02)'
+          : '0 4px 12px rgba(0,0,0,0.2)',
       }}
     >
-      {/* Header */}
       <div className="flex items-start justify-between gap-2 mb-2">
-        <div className="flex items-start gap-2 flex-1 min-w-0">
-          {/* Hospital icon */}
+        <div className="flex items-start gap-2.5 flex-1 min-w-0">
           <div
-            className={`h-8 w-8 rounded-xl flex items-center justify-center shrink-0 ${
+            className={`h-8 w-8 rounded-xl flex items-center justify-center shrink-0 border ${
               isEmergency && isCritical
-                ? 'bg-red-100 border border-red-200'
-                : 'bg-blue-50 border border-blue-100'
+                ? 'bg-diag-redSoft border-diag-red/25 text-diag-red'
+                : 'bg-diag-cyan/5 border-diag-cyan/15 text-diag-cyan'
             }`}
           >
             {isEmergency && isCritical ? (
-              <ShieldAlert className="h-4 w-4 text-red-500" />
+              <ShieldAlert className="h-4 w-4" />
             ) : (
-              <Building2 className="h-4 w-4 text-blue-500" />
+              <Building2 className="h-4 w-4" />
             )}
           </div>
           <div className="min-w-0 flex-1">
             <h4
-              className="text-xs font-bold text-slate-800 leading-snug truncate"
-              style={{ fontFamily: 'Outfit, sans-serif' }}
+              className="text-xs font-bold text-slate-200 leading-snug truncate"
+              style={{ fontFamily: 'Geist, sans-serif' }}
             >
               {hospital.name}
             </h4>
-            <p className="text-[10px] text-slate-400 font-medium">{hospital.type}</p>
+            <p className="text-[9px] text-slate-500 font-semibold">{hospital.type}</p>
           </div>
         </div>
 
-        {/* Emergency badge */}
         {isEmergency && (
-          <div className="flex items-center gap-1 shrink-0">
-            <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-[9px] font-black text-red-600 uppercase tracking-wider">
+          <div className="flex items-center gap-1 shrink-0 bg-diag-redSoft/10 px-2 py-0.5 rounded border border-diag-red/25">
+            <span className="h-1 w-1 rounded-full bg-diag-red animate-pulse" />
+            <span className="text-[8px] font-bold text-diag-red uppercase tracking-wider">
               24/7 ER
             </span>
           </div>
         )}
       </div>
 
-      {/* Stats row */}
-      <div className="flex items-center gap-3 mb-3">
-        <div className="flex items-center gap-1">
-          <Navigation className="h-2.5 w-2.5 text-blue-500" />
-          <span className="text-[10px] font-bold text-blue-600">
+      {/* Stats */}
+      <div className="flex items-center gap-3 mb-2.5">
+        <div className="flex items-center gap-1 bg-white/[0.02] px-2 py-0.5 rounded border border-white/5">
+          <Navigation className="h-2.5 w-2.5 text-diag-cyan" />
+          <span className="text-[9px] font-bold text-diag-cyan font-mono">
             {hospital.distance.toFixed(1)} km
           </span>
         </div>
@@ -113,20 +109,20 @@ function HospitalCard({ hospital, userLocation, index, riskLevel }) {
 
       {/* Address */}
       <div className="flex items-start gap-1.5 mb-3">
-        <MapPin className="h-2.5 w-2.5 text-slate-400 mt-0.5 shrink-0" />
-        <span className="text-[10px] text-slate-400 leading-snug">{hospital.address}</span>
+        <MapPin className="h-2.5 w-2.5 text-slate-500 mt-0.5 shrink-0" />
+        <span className="text-[9.5px] text-slate-400 leading-snug truncate w-full">{hospital.address}</span>
       </div>
 
-      {/* Action buttons */}
+      {/* Button link */}
       <div className="flex gap-1.5">
         <a
           href={directionsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl text-[10px] font-bold transition-all ${
+          className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl text-[10px] font-bold transition-all ${
             isEmergency && isCritical
-              ? 'bg-red-500 hover:bg-red-600 text-white'
-              : 'bg-blue-600 hover:bg-blue-700 text-white'
+              ? 'bg-diag-red hover:bg-red-600 text-white shadow-md'
+              : 'bg-diag-cyan hover:bg-diag-cyanHover text-diag-navy font-bold'
           }`}
         >
           <ExternalLink className="h-2.5 w-2.5" />
@@ -135,10 +131,10 @@ function HospitalCard({ hospital, userLocation, index, riskLevel }) {
         {hospital.phone && hospital.phone !== 'N/A' && (
           <a
             href={`tel:${hospital.phone}`}
-            className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 text-slate-500 hover:text-emerald-600 transition-all"
+            className="flex items-center justify-center px-2 py-1.5 rounded-xl bg-white/5 border border-white/5 hover:border-diag-emerald/30 hover:bg-diag-emeraldSoft/5 text-slate-400 hover:text-diag-emerald transition-all"
             title={`Call ${hospital.phone}`}
           >
-            <Phone className="h-2.5 w-2.5" />
+            <Phone className="h-3 w-3" />
           </a>
         )}
       </div>
@@ -146,7 +142,7 @@ function HospitalCard({ hospital, userLocation, index, riskLevel }) {
   );
 }
 
-// ── Leaflet Map Component ────────────────────────────────────
+// ── Leaflet Dark Map ─────────────────────────────────────────
 function HospitalMap({ hospitals, userLocation }) {
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
@@ -154,10 +150,11 @@ function HospitalMap({ hospitals, userLocation }) {
 
   useEffect(() => {
     if (!mapRef.current || hospitals.length === 0) return;
+    let isMounted = true;
 
-    // Lazy-load Leaflet
     import('leaflet').then((L) => {
-      // Fix Leaflet default icon path issue in Vite
+      if (!isMounted) return;
+
       delete L.Icon.Default.prototype._getIconUrl;
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
@@ -166,11 +163,9 @@ function HospitalMap({ hospitals, userLocation }) {
       });
 
       if (mapInstance.current) {
-        // Clean up old markers
         markersRef.current.forEach((m) => m.remove());
         markersRef.current = [];
       } else {
-        // Init map
         const centerLat = userLocation?.lat ?? hospitals[0].coordinates.lat;
         const centerLng = userLocation?.lng ?? hospitals[0].coordinates.lng;
 
@@ -181,58 +176,66 @@ function HospitalMap({ hospitals, userLocation }) {
           attributionControl: false,
         });
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // 1. High-fidelity ESRI World Imagery base satellite imagery layer
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
           maxZoom: 19,
+          attribution: 'Tiles &copy; Esri'
+        }).addTo(mapInstance.current);
+
+        // 2. High-fidelity ESRI World Transportation streets hybrid overlay
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}', {
+          maxZoom: 19,
+          opacity: 0.6
         }).addTo(mapInstance.current);
       }
 
       // User location marker
       if (userLocation) {
         const userIcon = L.divIcon({
-          html: `<div style="width:14px;height:14px;border-radius:50%;background:#2563EB;border:3px solid white;box-shadow:0 0 0 3px rgba(37,99,235,0.3),0 2px 8px rgba(0,0,0,0.3);"></div>`,
+          html: `<div style="width:12px;height:12px;border-radius:50%;background:#38BDF8;border:2px solid #070B14;box-shadow:0 0 0 3px rgba(56,189,248,0.25);"></div>`,
           className: '',
-          iconSize: [14, 14],
-          iconAnchor: [7, 7],
+          iconSize: [12, 12],
+          iconAnchor: [6, 6],
         });
 
         const userMarker = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
           .addTo(mapInstance.current)
-          .bindPopup('<b style="font-size:11px">📍 Your Location</b>');
+          .bindPopup('<b style="font-size:10px;color:#070B14">📍 Your Location</b>');
         markersRef.current.push(userMarker);
       }
 
       // Hospital markers
       hospitals.forEach((h) => {
         const hospitalIcon = L.divIcon({
-          html: `<div style="width:20px;height:20px;border-radius:50%;background:${h.emergency ? '#EF4444' : '#3B82F6'};border:2px solid white;box-shadow:0 0 0 2px ${h.emergency ? 'rgba(239,68,68,0.3)' : 'rgba(59,130,246,0.3)'},0 2px 8px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;font-size:9px;">🏥</div>`,
+          html: `<div style="width:18px;height:18px;border-radius:50%;background:${h.emergency ? '#EF4444' : '#38BDF8'};border:1.5px solid #070B14;box-shadow:0 0 0 2px ${h.emergency ? 'rgba(239,68,68,0.2)' : 'rgba(56,189,248,0.2)'};display:flex;align-items:center;justify-content:center;font-size:8px;">🏥</div>`,
           className: '',
-          iconSize: [20, 20],
-          iconAnchor: [10, 10],
+          iconSize: [18, 18],
+          iconAnchor: [9, 9],
         });
 
         const marker = L.marker([h.coordinates.lat, h.coordinates.lng], { icon: hospitalIcon })
           .addTo(mapInstance.current)
           .bindPopup(
-            `<div style="font-size:11px;font-family:system-ui">
+            `<div style="font-size:10px;font-family:system-ui;color:#070B14">
               <b>${h.name}</b><br>
               ${h.distance.toFixed(1)} km away<br>
-              ${h.emergency ? '<span style="color:#EF4444;font-weight:bold">🚨 Emergency Available</span>' : h.type}
+              ${h.emergency ? '<span style="color:#EF4444;font-weight:bold">🚨 24/7 Emergency</span>' : h.type}
             </div>`
           );
         markersRef.current.push(marker);
       });
 
-      // Fit all markers in view
       const allCoords = [
         ...(userLocation ? [[userLocation.lat, userLocation.lng]] : []),
         ...hospitals.map((h) => [h.coordinates.lat, h.coordinates.lng]),
       ];
       if (allCoords.length > 1) {
-        mapInstance.current.fitBounds(allCoords, { padding: [24, 24] });
+        mapInstance.current.fitBounds(allCoords, { padding: [16, 16] });
       }
     });
 
     return () => {
+      isMounted = false;
       if (mapInstance.current) {
         mapInstance.current.remove();
         mapInstance.current = null;
@@ -243,31 +246,27 @@ function HospitalMap({ hospitals, userLocation }) {
   return (
     <div
       ref={mapRef}
-      className="w-full h-full rounded-2xl overflow-hidden"
+      className="w-full h-full rounded-xl overflow-hidden"
       style={{ minHeight: 280 }}
     />
   );
 }
 
-// ── Loading Skeleton ─────────────────────────────────────────
+// ── Hospital Skeleton ────────────────────────────────────────
 function HospitalSkeleton() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      {[1, 2, 3, 4].map((i) => (
-        <div
-          key={i}
-          className="rounded-2xl p-4 border border-slate-100 bg-white animate-pulse"
-          style={{ animationDelay: `${i * 80}ms` }}
-        >
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-pulse">
+      {[1, 2].map((i) => (
+        <div key={i} className="rounded-2xl p-4 border border-white/5 bg-white/[0.01]">
           <div className="flex gap-3 mb-3">
-            <div className="h-8 w-8 rounded-xl bg-slate-100" />
+            <div className="h-8 w-8 rounded-xl bg-white/5" />
             <div className="flex-1">
-              <div className="h-3 bg-slate-100 rounded-full w-3/4 mb-2" />
-              <div className="h-2 bg-slate-100 rounded-full w-1/2" />
+              <div className="h-3 bg-white/5 rounded-full w-3/4 mb-1.5" />
+              <div className="h-2.5 bg-white/5 rounded-full w-1/2" />
             </div>
           </div>
-          <div className="h-2 bg-slate-100 rounded-full w-full mb-2" />
-          <div className="h-6 bg-slate-100 rounded-xl w-full mt-3" />
+          <div className="h-2 bg-white/5 rounded-full w-full mb-2" />
+          <div className="h-6 bg-white/5 rounded-xl w-full mt-2.5" />
         </div>
       ))}
     </div>
@@ -304,7 +303,7 @@ export default function HospitalRecommendation({ riskLevel = 'low', forceShow = 
   useEffect(() => {
     if (!shouldShow) return;
     load();
-    const t = setTimeout(() => setVisible(true), 100);
+    const t = setTimeout(() => setVisible(true), 50);
     return () => clearTimeout(t);
   }, [shouldShow, load]);
 
@@ -315,61 +314,57 @@ export default function HospitalRecommendation({ riskLevel = 'low', forceShow = 
 
   return (
     <div
-      className={`rounded-2xl overflow-hidden transition-all duration-700 ${
-        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+      className={`rounded-2xl overflow-hidden border border-white/5 transition-all duration-700 ${
+        visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3'
       }`}
-      style={{ transitionProperty: 'opacity, transform' }}
     >
-      {/* ── Header ──────────────────────────────────── */}
+      {/* Header bar */}
       <div
-        className="px-5 py-4 flex items-center justify-between"
+        className="px-5 py-3.5 flex items-center justify-between border-b border-white/5"
         style={{
           background: isCritical
-            ? 'linear-gradient(90deg, #1a0000 0%, #2d0000 100%)'
+            ? 'linear-gradient(90deg, #270E10 0%, #150809 100%)'
             : isHigh
-            ? 'linear-gradient(90deg, #1a0a00 0%, #2d1500 100%)'
-            : 'linear-gradient(90deg, #001a2d 0%, #0a1e33 100%)',
+            ? 'linear-gradient(90deg, #2A1709 0%, #170C04 100%)'
+            : 'linear-gradient(90deg, #091A2A 0%, #050E17 100%)',
         }}
       >
-        <div className="flex items-center gap-3">
-          {/* Pulsing icon */}
+        <div className="flex items-center gap-2.5">
           <div className="relative">
             {(isCritical || isHigh) && (
               <div
                 className="absolute inset-0 rounded-full animate-ping"
-                style={{ background: isCritical ? 'rgba(239,68,68,0.4)' : 'rgba(249,115,22,0.4)' }}
+                style={{ background: isCritical ? 'rgba(239,68,68,0.25)' : 'rgba(249,115,22,0.2)' }}
               />
             )}
             <div
-              className="h-9 w-9 rounded-full flex items-center justify-center relative z-10 text-white text-base"
-              style={{
-                background: isCritical ? '#EF4444' : isHigh ? '#F97316' : '#2563EB',
-              }}
+              className="h-8 w-8 rounded-full flex items-center justify-center relative z-10 text-white text-sm"
+              style={{ background: isCritical ? '#EF4444' : isHigh ? '#F97316' : '#38BDF8' }}
             >
               {isCritical ? '🚨' : isHigh ? '⚠️' : '🏥'}
             </div>
           </div>
           <div>
-            <span className="text-white font-black text-sm" style={{ fontFamily: 'Outfit, sans-serif' }}>
+            <span className="text-xs font-bold text-slate-100" style={{ fontFamily: 'Geist, sans-serif' }}>
               {isCritical
-                ? 'Emergency Medical Centers Nearby'
+                ? 'Emergency Trauma Facilities Nearby'
                 : isHigh
-                ? 'Specialist Hospitals Nearby'
-                : 'Nearby Medical Facilities'}
+                ? 'Clinical Specialist Centers Nearby'
+                : 'Medical Recommendation Centers'}
             </span>
-            <div className="flex items-center gap-2 mt-0.5">
+            <div className="flex items-center gap-1.5 mt-0.5">
               {isLive ? (
                 <>
-                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-emerald-400 text-[10px] font-bold uppercase tracking-widest">
-                    Live · GPS Located
+                  <div className="h-1 w-1 rounded-full bg-diag-emerald" />
+                  <span className="text-diag-emerald text-[9px] font-bold uppercase tracking-widest">
+                    GPS Active · Verified Live
                   </span>
                 </>
               ) : (
                 <>
-                  <div className="h-1.5 w-1.5 rounded-full bg-amber-400" />
-                  <span className="text-amber-400 text-[10px] font-bold uppercase tracking-widest">
-                    Demo · Curated List
+                  <div className="h-1 w-1 rounded-full bg-diag-amber" />
+                  <span className="text-diag-amber text-[9px] font-bold uppercase tracking-widest">
+                    GPS Inactive · Pre-seeded List
                   </span>
                 </>
               )}
@@ -377,67 +372,63 @@ export default function HospitalRecommendation({ riskLevel = 'low', forceShow = 
           </div>
         </div>
 
-        {/* Controls */}
-        <div className="flex items-center gap-2">
+        {/* Map controls */}
+        <div className="flex items-center gap-1.5">
           <button
-            onClick={() => setShowMap((s) => !s)}
-            className="px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-slate-300 hover:text-white bg-white/10 hover:bg-white/20 transition-all border border-white/10 flex items-center gap-1"
+            onClick={() => setShowMap(s => !s)}
+            className="px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-[9px] font-semibold text-slate-300 hover:text-white transition-all border border-white/5 flex items-center gap-1"
           >
             <MapPin className="h-2.5 w-2.5" />
             {showMap ? 'Hide Map' : 'Show Map'}
           </button>
           <button
             onClick={load}
-            className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-all border border-white/10"
-            title="Refresh hospitals"
+            className="p-1 rounded bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-all border border-white/5"
+            title="Refresh list"
           >
-            <RefreshCw className="h-3 w-3" />
+            <RefreshCw className="h-2.5 w-2.5" />
           </button>
         </div>
       </div>
 
-      {/* ── Critical Alert Banner ────────────────────── */}
+      {/* Critical Alert Warning */}
       {isCritical && (
-        <div className="px-5 py-2.5 flex items-center gap-2 border-b border-red-200"
-          style={{ background: 'linear-gradient(90deg, #FEF2F2, #FFF5F5)' }}>
-          <AlertCircle className="h-3.5 w-3.5 text-red-500 shrink-0" />
-          <p className="text-[11px] font-semibold text-red-700">
-            Critical values detected. Immediate emergency medical evaluation is strongly recommended. Please seek care now.
+        <div className="px-5 py-2.5 flex items-center gap-2 bg-diag-redSoft/5 border-b border-white/5">
+          <AlertCircle className="h-3.5 w-3.5 text-diag-red shrink-0" />
+          <p className="text-[10px] font-bold text-diag-red uppercase tracking-wider">
+            Critical deviation values detected. Immediate emergency medical consultation is recommended.
           </p>
         </div>
       )}
 
-      {/* ── Body ──────────────────────────────────────── */}
-      <div className="p-5 bg-white" style={{ borderTop: 'none' }}>
+      {/* Panel Body */}
+      <div className="p-5 bg-white/[0.01]">
         {loading ? (
           <HospitalSkeleton />
         ) : error ? (
-          <div className="flex items-center justify-center gap-2 py-8 text-slate-400">
-            <AlertCircle className="h-4 w-4" />
-            <span className="text-sm">{error}</span>
-            <button onClick={load} className="text-blue-500 hover:underline text-sm font-medium">
+          <div className="flex flex-col items-center justify-center gap-2 py-6 text-slate-400">
+            <AlertCircle className="h-5 w-5 text-diag-red" />
+            <span className="text-xs">{error}</span>
+            <button onClick={load} className="text-diag-cyan hover:underline text-xs font-bold uppercase tracking-wider">
               Retry
             </button>
           </div>
         ) : (
           <div className={`${showMap ? 'grid grid-cols-1 lg:grid-cols-2 gap-5' : ''}`}>
-            {/* Hospital Cards */}
-            <div className="flex flex-col gap-3">
-              {/* Location status */}
-              <div className="flex items-center gap-2 mb-1">
-                <LocateFixed className="h-3 w-3 text-slate-400" />
-                <span className="text-[10px] text-slate-400 font-medium">
-                  {isLive
-                    ? `Showing real hospitals near your location`
-                    : `Showing curated hospitals · Enable location for live results`}
+            
+            {/* List columns */}
+            <div className="flex flex-col gap-2.5">
+              <div className="flex items-center gap-2">
+                <LocateFixed className="h-3 w-3 text-slate-500" />
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                  {isLive ? 'Sorted chronologically by nearest distance' : 'Mocking geo-coordinates near your city'}
                 </span>
               </div>
-
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3">
-                {hospitals.slice(0, showMap ? 4 : 6).map((hospital, i) => (
+                {hospitals.slice(0, showMap ? 4 : 6).map((h, i) => (
                   <HospitalCard
-                    key={hospital.id}
-                    hospital={hospital}
+                    key={h.id}
+                    hospital={h}
                     userLocation={userLocation}
                     index={i}
                     riskLevel={riskLevel}
@@ -446,12 +437,9 @@ export default function HospitalRecommendation({ riskLevel = 'low', forceShow = 
               </div>
             </div>
 
-            {/* Map */}
+            {/* Map column */}
             {showMap && (
-              <div
-                className="rounded-2xl overflow-hidden border border-slate-200"
-                style={{ minHeight: 300 }}
-              >
+              <div className="rounded-xl overflow-hidden border border-white/5 min-h-[300px] shadow-2xl relative">
                 <HospitalMap hospitals={hospitals} userLocation={userLocation} />
               </div>
             )}
@@ -459,17 +447,13 @@ export default function HospitalRecommendation({ riskLevel = 'low', forceShow = 
         )}
       </div>
 
-      {/* ── Footer ────────────────────────────────────── */}
-      <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <Zap className="h-2.5 w-2.5 text-slate-400" />
-          <span className="text-[10px] text-slate-400 font-medium">
-            Powered by OpenStreetMap · Vitalis AI Location Services
-          </span>
-        </div>
-        <span className="text-[10px] text-slate-400">
-          {hospitals.length} facilities found
+      {/* Footer */}
+      <div className="px-5 py-2.5 border-t border-white/5 bg-slate-950/20 flex items-center justify-between flex-wrap gap-2 text-[9px] text-slate-500 font-medium">
+        <span className="flex items-center gap-1.5">
+          <Zap className="h-3 w-3" />
+          Map Engine: OpenStreetMap · Triage Coordinates: DiagnosIQ GPS Services
         </span>
+        <span>{hospitals.length} facilities verified</span>
       </div>
     </div>
   );

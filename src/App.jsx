@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Sparkles, Activity, UploadCloud, ArrowRight, FileText,
+  Sparkles, UploadCloud, ArrowRight, FileText,
   CheckCircle, Cpu, FileJson, Trash2, Database, Shield,
-  Brain, Heart, FlaskConical, Stethoscope, TrendingUp, MessageCircle,
-  Zap, AlertCircle, Play, ChevronRight
+  Brain, Heart, FlaskConical, Stethoscope, TrendingUp,
+  AlertCircle, Play, ChevronRight, Activity, Globe
 } from 'lucide-react';
-import { MOCK_REPORTS, analyzeBiomarkers, parseRawReportText } from './services/medicalEngine';
+import { MOCK_REPORTS, analyzeBiomarkers, parseRawReportText, generateDynamicSummaries } from './services/medicalEngine';
+import { extractTextFromFile, getOCRSourceLabel } from './services/ocrService';
 import AnatomicalVisualizer from './components/AnatomicalVisualizer';
 import RiskDashboard from './components/RiskDashboard';
 import TrendAnalysis from './components/TrendAnalysis';
@@ -15,13 +16,9 @@ import AIInsightPanel from './components/AIInsightPanel';
 import {
   AnimatedRedCross,
   ECGStrip,
-  BloodDrops,
-  BloodCells,
-  BloodStreaks,
-  DataStreams,
   HospitalStatusBadge,
   MedicalParticleField,
-  FloatingCrosses,
+  BackgroundECGGraph
 } from './components/HospitalEffects';
 
 /* ══════════════════════════════════════════════════════════
@@ -71,88 +68,34 @@ Verified by laboratory computer auto-signature`
 };
 
 const CINEMATIC_LOADING_STEPS = [
-  { msg: "Initializing optical character extraction pipeline...", icon: "🔬" },
-  { msg: "Applying binarization & contrast optimization...", icon: "⚙️" },
-  { msg: "Extracting diagnostic markers from report typography...", icon: "📊" },
-  { msg: "Analyzing hematological patterns...", icon: "🩸" },
-  { msg: "Running WHO/ICMR clinical threshold validation...", icon: "🛡️" },
-  { msg: "Evaluating organ-level risk correlations...", icon: "🫀" },
-  { msg: "Synthesizing AI patient explanation layer...", icon: "🧠" },
-  { msg: "Generating preventive healthcare recommendations...", icon: "💊" },
-  { msg: "Analysis complete. Dispatching intelligence payload...", icon: "✅" },
+  { msg: "Extracting clinical medical markers from typography...", icon: "🔍" },
+  { msg: "Analyzing diagnostic biomarker range deviations...", icon: "📊" },
+  { msg: "Evaluating emergency cardiac & metabolic events...", icon: "⚡" },
+  { msg: "Consulting WHO & ICMR clinical guidelines...", icon: "🛡️" },
+  { msg: "Mapping multi-system biological organ stress...", icon: "🫀" },
+  { msg: "Synthesizing AI patient-friendly health insights...", icon: "🧠" },
 ];
 
 const PROCESS_STEPS = [
-  { id: 1, label: 'OCR Scan',     icon: <UploadCloud className="h-3.5 w-3.5" /> },
-  { id: 2, label: 'Parse Values', icon: <FileText className="h-3.5 w-3.5" /> },
-  { id: 3, label: 'Risk Check',   icon: <Shield className="h-3.5 w-3.5" /> },
-  { id: 4, label: 'Complete',     icon: <CheckCircle className="h-3.5 w-3.5" /> },
+  { id: 1, label: 'OCR Extraction', icon: <UploadCloud className="h-3.5 w-3.5" /> },
+  { id: 2, label: 'Fuzzy Parsing',  icon: <FileText className="h-3.5 w-3.5" /> },
+  { id: 3, label: 'Clinical Review', icon: <Shield className="h-3.5 w-3.5" /> },
+  { id: 4, label: 'Synthesis',      icon: <CheckCircle className="h-3.5 w-3.5" /> },
 ];
-
-const FEATURES = [
-  {
-    icon: <Brain className="h-5 w-5" />,
-    color: 'bg-blue-50 text-blue-600 border border-blue-100',
-    title: 'AI-Powered Extraction',
-    desc: 'Advanced OCR with 99.2% accuracy extracts all biomarkers from any report format.',
-  },
-  {
-    icon: <Shield className="h-5 w-5" />,
-    color: 'bg-red-50 text-red-600 border border-red-100',
-    title: 'Emergency Risk Detection',
-    desc: 'Deterministic WHO/ICMR rule engine instantly flags life-threatening values.',
-  },
-  {
-    icon: <TrendingUp className="h-5 w-5" />,
-    color: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
-    title: 'Historical Trends',
-    desc: 'Compare biomarkers across time to detect progressive deterioration early.',
-  },
-  {
-    icon: <MessageCircle className="h-5 w-5" />,
-    color: 'bg-violet-50 text-violet-600 border border-violet-100',
-    title: 'Plain Language Explain',
-    desc: 'Clinical findings translated into clear patient-friendly language.',
-  },
-];
-
-// Animated counter hook
-function useAnimatedCounter(target, duration = 1800) {
-  const [value, setValue] = useState(0);
-  useEffect(() => {
-    const start = performance.now();
-    const step = (now) => {
-      const p = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - p, 3);
-      setValue(Math.round(eased * target));
-      if (p < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, [target, duration]);
-  return value;
-}
-
-function StatCounter({ value, suffix = '', prefix = '' }) {
-  // Extract numeric part
-  const numericVal = parseFloat(value.replace(/[^0-9.]/g, ''));
-  const hasLt = value.startsWith('<');
-  const hasPct = value.includes('%');
-  const hasSec = value.includes('s');
-  const animated = useAnimatedCounter(numericVal, 2000);
-  
-  let display = animated;
-  if (hasLt) display = `< ${animated}`;
-  if (hasPct) display = `${animated}%`;
-  if (hasSec) display = `< ${animated}s`;
-  
-  return <span>{display}</span>;
-}
 
 /* ══════════════════════════════════════════════════════════
    MAIN APP
    ══════════════════════════════════════════════════════════ */
 export default function App() {
-  const [screen, setScreen] = useState('landing');
+  const [screen, setScreen] = useState('landing'); // 'landing' | 'upload' | 'scanning' | 'analysis' | 'print'
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('theme') || 'dark';
+  });
+
+  useEffect(() => {
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
   const [activeTab, setActiveTab] = useState('command');
   const [activeReport, setActiveReport] = useState(null);
   const [selectedOrgan, setSelectedOrgan] = useState(null);
@@ -170,24 +113,90 @@ export default function App() {
   const [fileName, setFileName] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState(''); // OCR status message
+  const [ocrSource, setOcrSource] = useState(''); // which engine was used
   const [historyReports, setHistoryReports] = useState([]);
 
   // Demo Mode state
   const [demoMode, setDemoMode] = useState(false);
   const [showDemoBanner, setShowDemoBanner] = useState(false);
-
-  // Dashboard reveal animation
   const [dashboardVisible, setDashboardVisible] = useState(false);
+
+  // Floating AI Chat Assistant states
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    { role: 'model', text: 'Hello! I am your DiagnosIQ AI Clinical Health Assistant. Feel free to ask me any questions about your biomarker ranges, metabolic risk factors, GFR indices, or custom preventive recommendations!' }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
 
   useEffect(() => {
     if (screen === 'analysis') {
-      setTimeout(() => setDashboardVisible(true), 100);
+      setTimeout(() => setDashboardVisible(true), 50);
     } else {
       setDashboardVisible(false);
     }
   }, [screen]);
 
   /* ── Report loaders ───────────────────────────────────── */
+  /* ── Report loaders & Chronology Storage ──────────────── */
+  const loadPatientChronology = (patientName, defaultSeeds) => {
+    const key = `diagnosiq_timeline_${patientName.replace(/\s+/g, '_')}`;
+    const stored = localStorage.getItem(key);
+    if (stored) {
+      setHistoryReports(JSON.parse(stored));
+    } else {
+      setHistoryReports(defaultSeeds);
+      localStorage.setItem(key, JSON.stringify(defaultSeeds));
+    }
+  };
+
+  const handleSaveReport = () => {
+    if (!activeReport) return;
+    const recordDate = activeReport.report_date || new Date().toISOString().split('T')[0];
+    const biomarkersMap = {};
+    activeReport.biomarkers.forEach(bm => {
+      biomarkersMap[bm.name.toLowerCase()] = bm.value;
+    });
+
+    const newRecord = {
+      date: recordDate,
+      biomarkers: biomarkersMap
+    };
+
+    const isDuplicate = historyReports.some(r => r.date === recordDate);
+    let updatedHistory = [...historyReports];
+    if (isDuplicate) {
+      updatedHistory = historyReports.map(r => r.date === recordDate ? newRecord : r);
+    } else {
+      updatedHistory.push(newRecord);
+    }
+
+    setHistoryReports(updatedHistory);
+    
+    const key = `diagnosiq_timeline_${activeReport.patient_name.replace(/\s+/g, '_')}`;
+    localStorage.setItem(key, JSON.stringify(updatedHistory));
+  };
+
+  const handleSendMessage = (textToSend) => {
+    if (!textToSend || !textToSend.trim() || chatLoading) return;
+    const userMsg = { role: 'user', text: textToSend };
+    setChatMessages(prev => [...prev, userMsg]);
+    setChatInput('');
+    setChatLoading(true);
+
+    import('./services/geminiService').then(async (service) => {
+      try {
+        const answer = await service.chatWithAssistant(activeReport, chatMessages.concat(userMsg), textToSend);
+        setChatMessages(prev => [...prev, { role: 'model', text: answer }]);
+      } catch (err) {
+        setChatMessages(prev => [...prev, { role: 'model', text: "I apologize, but I'm having difficulty connecting to my clinical intelligence layer. Please verify your connection or consult a physician for diagnostic advice." }]);
+      } finally {
+        setChatLoading(false);
+      }
+    });
+  };
+
   const handleLoadReport = (reportKey) => {
     setScreen('scanning');
     setScanProgress(0);
@@ -197,50 +206,57 @@ export default function App() {
 
     const report = MOCK_REPORTS[reportKey];
     const analysis = analyzeBiomarkers(report.biomarkers);
+    // Dynamically regenerate summaries from actual biomarker values
+    const dynamicSummaries = generateDynamicSummaries(report.patient_name, report.biomarkers);
+
+    // Generate simulated raw text for the mock report to send to Gemini
+    let simulatedRawText = `Patient Name: ${report.patient_name}\nReport Date: ${report.report_date}\nReport Type: ${report.report_type}\n=====================================\n`;
+    report.biomarkers.forEach(bm => {
+      simulatedRawText += `${bm.name}: ${bm.value} ${bm.unit} (Normal Range: ${bm.normal_range})\n`;
+    });
+    simulatedRawText += `=====================================\nValidated by: Auto-generated mock clinic template`;
+
     const updatedReport = {
       ...report,
+      raw_text: simulatedRawText,
       overall_score: analysis.overallScore,
       overall_risk: analysis.overallRisk,
       organScores: analysis.organScores,
-      emergency_flags: analysis.flags
+      emergency_flags: analysis.flags,
+      summary_patient: dynamicSummaries.summary_patient,
+      summary_doctor: dynamicSummaries.summary_doctor,
     };
     setActiveReport(updatedReport);
     setCriticalFlags(analysis.flags);
 
+    let seeds = [];
     if (report.historical) {
-      setHistoryReports(report.historical);
+      seeds = report.historical;
     } else {
       if (reportKey === 'normal') {
-        setHistoryReports([
+        seeds = [
           { date: '2025-11-20', biomarkers: { glucose: 95, hemoglobin: 14.2, creatinine: 0.9, sodium: 139 } },
           { date: '2026-02-15', biomarkers: { glucose: 94, hemoglobin: 14.4, creatinine: 0.9, sodium: 138 } },
           { date: '2026-05-18', biomarkers: { glucose: 92, hemoglobin: 14.5, creatinine: 0.9, sodium: 140 } }
-        ]);
+        ];
       } else if (reportKey === 'critical') {
-        setHistoryReports([
+        seeds = [
           { date: '2025-11-20', biomarkers: { glucose: 110, hemoglobin: 12.5, creatinine: 0.8, sodium: 136 } },
           { date: '2026-02-15', biomarkers: { glucose: 160, hemoglobin: 11.8, creatinine: 0.9, sodium: 135 } },
           { date: '2026-05-23', biomarkers: { glucose: 310, hemoglobin: 11.2, creatinine: 1.1, sodium: 135 } }
-        ]);
-      } else {
-        setHistoryReports([]);
+        ];
       }
     }
-  };
-
-  // Demo mode loader — instant gratification
-  const handleDemoMode = () => {
-    setDemoMode(true);
-    setShowDemoBanner(true);
-    handleLoadReport('critical');
+    loadPatientChronology(updatedReport.patient_name, seeds);
   };
 
   const handleParseCustomText = (textToParse) => {
+    if (!textToParse || !textToParse.trim()) return;
     setScreen('scanning');
     setScanProgress(0);
     setLoadingStep(0);
     setCompletedLogs([]);
-    setActiveLog('Initiating Regex OCR Mapping Sequence...');
+    setActiveLog('Initiating optical text parsing sequence...');
 
     const parsed = parseRawReportText(textToParse);
     if (!parsed || parsed.biomarkers.length === 0) {
@@ -264,19 +280,41 @@ export default function App() {
         }
       };
       const analysis = analyzeBiomarkers(defaultParsed.biomarkers);
-      const updatedReport = { ...defaultParsed, overall_score: analysis.overallScore, overall_risk: analysis.overallRisk, organScores: analysis.organScores, emergency_flags: analysis.flags };
+      const defSummaries = generateDynamicSummaries(defaultParsed.patient_name, defaultParsed.biomarkers);
+      const updatedReport = {
+        ...defaultParsed,
+        raw_text: textToParse,
+        overall_score: analysis.overallScore,
+        overall_risk: analysis.overallRisk,
+        organScores: analysis.organScores,
+        emergency_flags: analysis.flags,
+        summary_patient: defSummaries.summary_patient,
+        summary_doctor: defSummaries.summary_doctor,
+      };
       setActiveReport(updatedReport);
       setCriticalFlags(analysis.flags);
-      setHistoryReports([
+
+      const defaultSeeds = [
         { date: '2025-11-20', biomarkers: { glucose: 98, hemoglobin: 13.5, creatinine: 0.9, sodium: 138 } },
         { date: '2026-02-15', biomarkers: { glucose: 112, hemoglobin: 12.8, creatinine: 1.0, sodium: 137 } },
         { date: updatedReport.report_date, biomarkers: { glucose: 155, hemoglobin: 11.5, creatinine: 1.0, sodium: 137 } }
-      ]);
+      ];
+      loadPatientChronology(updatedReport.patient_name, defaultSeeds);
       return;
     }
 
     const analysis = analyzeBiomarkers(parsed.biomarkers);
-    const updatedReport = { ...parsed, overall_score: analysis.overallScore, overall_risk: analysis.overallRisk, organScores: analysis.organScores, emergency_flags: analysis.flags };
+    const parsedSummaries = generateDynamicSummaries(parsed.patient_name, parsed.biomarkers);
+    const updatedReport = {
+      ...parsed,
+      raw_text: textToParse,
+      overall_score: analysis.overallScore,
+      overall_risk: analysis.overallRisk,
+      organScores: analysis.organScores,
+      emergency_flags: analysis.flags,
+      summary_patient: parsedSummaries.summary_patient,
+      summary_doctor: parsedSummaries.summary_doctor,
+    };
     setActiveReport(updatedReport);
     setCriticalFlags(analysis.flags);
 
@@ -287,14 +325,15 @@ export default function App() {
     if (!parsedBms.creatinine) parsedBms.creatinine = 0.9;
     if (!parsedBms.sodium) parsedBms.sodium = 140;
 
-    setHistoryReports([
-      { date: '2025-11-20', biomarkers: { glucose: parsedBms.glucose * 0.8, hemoglobin: parsedBms.hemoglobin * 1.1, creatinine: parsedBms.creatinine * 0.8, sodium: 139 } },
-      { date: '2026-02-15', biomarkers: { glucose: parsedBms.glucose * 0.9, hemoglobin: parsedBms.hemoglobin * 1.05, creatinine: parsedBms.creatinine * 0.9, sodium: 138 } },
+    const parsedSeeds = [
+      { date: '2025-11-20', biomarkers: { glucose: Math.round(parsedBms.glucose * 0.8), hemoglobin: Math.round(parsedBms.hemoglobin * 1.1), creatinine: parseFloat((parsedBms.creatinine * 0.8).toFixed(2)), sodium: 139 } },
+      { date: '2026-02-15', biomarkers: { glucose: Math.round(parsedBms.glucose * 0.9), hemoglobin: Math.round(parsedBms.hemoglobin * 1.05), creatinine: parseFloat((parsedBms.creatinine * 0.9).toFixed(2)), sodium: 138 } },
       { date: updatedReport.report_date, biomarkers: parsedBms }
-    ]);
+    ];
+    loadPatientChronology(updatedReport.patient_name, parsedSeeds);
   };
 
-  /* ── DnD ──────────────────────────────────────────────── */
+  /* ── Drag & Drop ──────────────────────────────────────── */
   const handleDragOver = (e) => { e.preventDefault(); setIsDragOver(true); };
   const handleDragLeave = () => setIsDragOver(false);
   const handleDropFile = (e) => {
@@ -307,23 +346,48 @@ export default function App() {
     const files = e.target.files;
     if (files && files.length > 0) processSelectedFile(files[0]);
   };
-  const processSelectedFile = (file) => {
+  const processSelectedFile = async (file) => {
     setFileName(file.name);
     setIsUploading(true);
     setUploadProgress(0);
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 20;
-      setUploadProgress(progress);
-      if (progress >= 100) {
-        clearInterval(interval);
-        setIsUploading(false);
+    setUploadStatus('Reading file...');
+    setOcrSource('');
+    setInputText('');
+
+    // Simulated progress ticks during OCR processing
+    const progressInterval = setInterval(() => {
+      setUploadProgress(p => Math.min(p + 8, 85));
+    }, 200);
+
+    try {
+      setUploadStatus('Extracting text with AI Vision...');
+      const { text, source, confidence } = await extractTextFromFile(file);
+
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+
+      if (text && text.trim().length > 10) {
+        setInputText(text);
+        setOcrSource(getOCRSourceLabel(source));
+        setUploadStatus(`✓ Extracted via ${getOCRSourceLabel(source)} (${Math.round(confidence * 100)}% confidence)`);
+      } else {
+        // OCR produced no usable text — fall back to template suggestion by filename
         const n = file.name.toLowerCase();
         if (n.includes('cardiac') || n.includes('troponin')) setInputText(RAW_TEXT_TEMPLATES.cardiac_emergency);
         else if (n.includes('kidney') || n.includes('renal')) setInputText(RAW_TEXT_TEMPLATES.renal_anemia);
         else setInputText(RAW_TEXT_TEMPLATES.lipid_cbc);
+        setOcrSource('Template Fallback');
+        setUploadStatus('⚠ OCR could not extract text clearly — loaded sample template');
       }
-    }, 150);
+    } catch (err) {
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      setOcrSource('Error');
+      setUploadStatus('⚠ File read failed — please paste text manually below');
+      console.error('[DiagnosIQ] File processing error:', err);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   /* ── Scan simulation ──────────────────────────────────── */
@@ -339,7 +403,7 @@ export default function App() {
           setTimeout(() => {
             setScreen('analysis');
             if (criticalFlags.length > 0) setShowEmergency(true);
-          }, 500);
+          }, 400);
           return 100;
         }
         stepIndex = Math.floor(next / (100 / totalSteps));
@@ -352,551 +416,495 @@ export default function App() {
         }
         return next;
       });
-    }, 650);
+    }, 600);
     return () => clearInterval(interval);
   }, [screen, criticalFlags]);
 
   const currentStep = Math.ceil((scanProgress / 100) * 4);
 
-  /* ══════════════════════════════════════════════════════
-     RENDER
-     ══════════════════════════════════════════════════════ */
-  return (
-    <div className="min-h-screen" style={{ color: '#0F172A' }}>
+  // Logo home redirect handler
+  const handleHomeRedirect = () => {
+    setScreen('landing');
+    setSelectedOrgan(null);
+    setFileName('');
+    setInputText('');
+  };
 
-      {/* ── Top ECG strip (always visible) ─────────────── */}
+  const isSaved = activeReport ? historyReports.some(r => r.date === (activeReport.report_date || new Date().toISOString().split('T')[0])) : false;
+
+  return (
+    <div className="min-h-screen text-slate-100 flex flex-col relative bg-diag-bg transition-colors duration-300">
+      
+      {/* Top calm anim ECG strip */}
       <div className="ecg-strip" />
 
+      {/* Grid overlay for high-end look */}
+      <div className="medical-grid-overlay pointer-events-none" />
+
+      {/* ── HEADER NAVIGATION (DiagnosIQ Logo & Global Actions) ── */}
+      <nav className="relative z-20 w-full flex items-center justify-between px-6 py-4 max-w-7xl mx-auto border-b border-white/[0.04] bg-diag-bg/40 backdrop-blur-md sticky top-0">
+        <div className="flex items-center gap-3 cursor-pointer select-none" onClick={handleHomeRedirect}>
+          <AnimatedRedCross size={34} pulse glow />
+          <div className="text-left">
+            <span
+              className="text-lg font-black text-slate-50 tracking-tight block"
+              style={{ fontFamily: 'Geist, sans-serif' }}
+            >
+              Diagnos<span className="text-diag-cyan">IQ</span>
+            </span>
+            <span className="text-[8px] font-bold text-diag-cyan uppercase tracking-widest block -mt-1">
+              Preventive AI Platform
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition-all flex items-center gap-1.5 select-none"
+          >
+            {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
+          </button>
+          {screen !== 'landing' && (
+            <button
+              onClick={() => {
+                if (screen === 'upload') setScreen('landing');
+                else if (screen === 'scanning') setScreen('upload');
+                else if (screen === 'analysis') setScreen('upload');
+                else if (screen === 'print') setScreen('analysis');
+              }}
+              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition-all flex items-center gap-1.5"
+            >
+              ← Back
+            </button>
+          )}
+          <HospitalStatusBadge status={screen === 'scanning' ? 'SCANNING' : 'OPERATIONAL'} />
+        </div>
+      </nav>
+
       {/* ╔══════════════════════════════════════════════╗
-          ║  SCREEN 1 — HOSPITAL INTELLIGENCE LANDING   ║
+          ║  SCREEN 1 — PREMIUM LANDING HERO            ║
           ╚══════════════════════════════════════════════╝ */}
       {screen === 'landing' && (
-        <div className="flex flex-col min-h-screen hospital-hero-bg">
-          <BloodCells />
-          <BloodStreaks />
-          <FloatingCrosses />
-          <DataStreams count={5} />
+        <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-12 md:py-20 relative z-10 flex flex-col lg:flex-row gap-12 items-center justify-between">
           <MedicalParticleField />
+          <BackgroundECGGraph />
 
-          {/* Medical grid overlay */}
-          <div className="medical-grid-overlay" />
-
-          {/* ── Navigation ─────────────────────────── */}
-          <nav className="relative z-10 w-full flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
-            <div className="flex items-center gap-3">
-              <AnimatedRedCross size={36} pulse spin glow />
-              <div>
-                <span
-                  className="text-xl font-black text-slate-900 block"
-                  style={{ fontFamily: 'Outfit, sans-serif', letterSpacing: '-0.03em', lineHeight: 1.1 }}
-                >
-                  Vitalis <span className="text-gradient-red">AI</span>
-                </span>
-                <span className="text-[9px] font-bold text-red-400 uppercase tracking-widest">
-                  Medical Intelligence
-                </span>
-              </div>
+          {/* Left Side Info column */}
+          <div className="flex-1 flex flex-col text-left max-w-xl animate-fade-up">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-diag-cyan/5 border border-diag-cyan/15 text-diag-cyan text-[10px] font-bold uppercase tracking-widest mb-6 w-fit">
+              <span className="h-1.5 w-1.5 rounded-full bg-diag-cyan animate-pulse" />
+              SaaS Grade Preventative Intelligence
             </div>
-            <div className="flex items-center gap-3">
-              <HospitalStatusBadge status="OPERATIONAL" />
-              {/* Demo Mode Toggle */}
+
+            <h1
+              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] text-slate-50 mb-6"
+              style={{ fontFamily: 'Geist, sans-serif' }}
+            >
+              AI-Powered <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-diag-cyan to-indigo-400">
+                Preventive Healthcare
+              </span> <br />
+              Intelligence
+            </h1>
+
+            <p className="text-slate-400 text-sm sm:text-base leading-relaxed mb-8 font-medium">
+              Transform medical reports into actionable health insights with intelligent risk analysis, emergency detection, and AI-assisted preventive care. Built for hospital partnerships and clinical accuracy.
+            </p>
+
+            <div className="flex flex-wrap gap-3">
               <button
-                onClick={() => demoMode ? setDemoMode(false) : handleDemoMode()}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
-                  demoMode
-                    ? 'bg-violet-600 border-violet-500 text-white shadow-lg shadow-violet-200'
-                    : 'bg-white/80 border-slate-200 text-slate-600 hover:border-violet-300 hover:text-violet-600'
-                }`}
+                onClick={() => setScreen('upload')}
+                className="btn-primary"
               >
-                <Play className="h-3 w-3" />
-                {demoMode ? 'Demo ON' : 'Demo Mode'}
+                Analyze Report
+                <ArrowRight className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => { setDemoMode(true); handleLoadReport('critical'); }}
+                className="btn-secondary"
+              >
+                View Demo
               </button>
             </div>
-          </nav>
 
-          {/* ── ECG strip below nav ─────────────────── */}
-          <div className="relative z-10 w-full px-6 max-w-7xl mx-auto">
-            <ECGStrip color="#DC143C" height={48} />
+            {/* Metrics Checklist */}
+            <div className="mt-12 grid grid-cols-3 gap-6 border-t border-white/[0.04] pt-8">
+              {[
+                { val: '99.2%', desc: 'OCR Extraction' },
+                { val: 'Zero', desc: 'Hallucination Safety' },
+                { val: '< 10s', desc: 'Realtime Decipher' }
+              ].map((m, i) => (
+                <div key={i}>
+                  <div className="text-lg font-black text-diag-cyan tracking-tight">{m.val}</div>
+                  <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mt-0.5">{m.desc}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* ── Hero Section ────────────────────────── */}
-          <main className="relative z-10 flex-1 flex flex-col items-center px-6 pt-6 pb-16 max-w-6xl mx-auto w-full">
+          {/* Right Side Landing Floating Preview */}
+          <div className="flex-1 w-full max-w-lg lg:max-w-none relative animate-fade-in lg:pl-6">
+            <div className="glass-card rounded-2xl border border-white/5 p-6 relative overflow-hidden shadow-2xl scale-[1.02]">
+              <div className="absolute top-0 right-0 h-40 w-40 bg-diag-cyan/5 rounded-full blur-3xl" />
+              
+              {/* Fake dashboard headers */}
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-diag-cyan animate-pulse" />
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">DiagnosIQ Core Telemetry</span>
+                </div>
+                <span className="badge-normal text-[9px] py-0.5 px-2">Assaying Complete</span>
+              </div>
 
-            {/* Large Red Cross + headline */}
-            <div className="flex flex-col items-center mb-8 animate-fade-in">
-              {/* Hero cross + badge row */}
-              <div className="flex items-center gap-4 mb-6">
-                <AnimatedRedCross size={72} pulse spin glow />
-                <div className="text-left">
-                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 border border-red-200 text-red-600 text-[10px] font-black uppercase tracking-widest mb-2">
-                    <span className="pulse-dot" style={{ width: 6, height: 6 }} />
-                    Emergency Medical AI · Live
+              {/* Fake Health Score circular progress representation */}
+              <div className="flex items-center gap-6 mb-6 p-4 rounded-xl border border-white/5 bg-white/[0.01]">
+                <div className="relative h-20 w-20 flex items-center justify-center bg-diag-bg rounded-full border border-white/5 shadow-inner">
+                  <svg className="w-full h-full p-1" viewBox="0 0 36 36">
+                    <path
+                      className="text-slate-800"
+                      strokeWidth="2.5"
+                      stroke="currentColor"
+                      fill="none"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <path
+                      className="text-diag-cyan"
+                      strokeWidth="2.5"
+                      strokeDasharray="85, 100"
+                      strokeLinecap="round"
+                      stroke="currentColor"
+                      fill="none"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                  </svg>
+                  <div className="absolute flex flex-col items-center">
+                    <span className="text-xl font-extrabold text-diag-cyan" style={{ fontFamily: 'JetBrains Mono' }}>85</span>
+                    <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wide">INDEX</span>
                   </div>
-                  <h1
-                    className="text-5xl sm:text-6xl font-black leading-[1.0]"
-                    style={{ fontFamily: 'Outfit, sans-serif', letterSpacing: '-0.03em', color: '#0F172A' }}
-                  >
-                    Your Medical Reports,
-                  </h1>
-                  <h1
-                    className="text-5xl sm:text-6xl font-black leading-[1.0] mt-1"
-                    style={{ fontFamily: 'Outfit, sans-serif', letterSpacing: '-0.03em' }}
-                  >
-                    <span className="text-gradient-red">Intelligently</span>{' '}
-                    <span className="text-gradient-blue">Decoded</span>
-                  </h1>
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-200">Systemic Integrity Score</h4>
+                  <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
+                    Multivariate analysis reflects optimal physiological clearance indexes across cardiac, metabolic, and renal biomarkers.
+                  </p>
                 </div>
               </div>
 
-              <p className="text-base sm:text-lg text-slate-500 text-center max-w-2xl leading-relaxed font-medium mb-2">
-                Upload any medical report. In seconds, get extracted biomarkers, organ-level risk analysis,
-                trend projections, and clinical action plans in one futuristic hospital dashboard.
-              </p>
-            </div>
-
-            {/* ── Stats Row (animated) ─────────────── */}
-            <div className="grid grid-cols-3 gap-4 max-w-lg w-full mb-10 animate-fade-in">
-              {[
-                { value: '99', suffix: '%', label: 'OCR Accuracy',  color: '#DC143C' },
-                { value: '100', suffix: '%',  label: 'Rule Safety',    color: '#2563EB' },
-                { value: '30', prefix: '< ', suffix: 's', label: 'Full Analysis',  color: '#22C55E' },
-              ].map((stat, i) => (
-                <div key={i} className="glass-card-red rounded-2xl p-4 text-center vitals-glow">
-                  <div className="text-2xl font-black mb-1 vitals-counter" style={{ color: stat.color, fontFamily: 'Outfit, sans-serif' }}>
-                    {stat.prefix || ''}<StatCounter value={`${stat.value}${stat.suffix}`} />{stat.suffix === '%' ? '' : stat.suffix}
-                  </div>
-                  <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* ── Blood Drop Decorative ──────────────── */}
-            <BloodDrops count={6} className="mb-2 w-full max-w-3xl" />
-
-            {/* ── Feature Cards ───────────────────────── */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-4xl w-full mb-10 animate-fade-in">
-              {FEATURES.map((f, i) => (
-                <div key={i} className="glass-card glass-card-hover rounded-2xl p-4 text-left scan-beam-wrap">
-                  <div className="scan-beam" />
-                  <div className={`inline-flex p-2 rounded-xl ${f.color} mb-3`}>
-                    {f.icon}
-                  </div>
-                  <h3 className="text-sm font-bold text-slate-800 mb-1" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                    {f.title}
-                  </h3>
-                  <p className="text-[11px] text-slate-500 leading-snug">{f.desc}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* ── How It Works Section ─────────────────── */}
-            <div className="w-full max-w-4xl mb-10">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(220,20,60,0.3), transparent)' }} />
-                <span className="text-xs font-bold text-red-400 uppercase tracking-widest">How It Works</span>
-                <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(220,20,60,0.3), transparent)' }} />
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {/* Fake Table */}
+              <div className="space-y-2.5">
                 {[
-                  { step: '01', icon: '📄', title: 'Upload Report', desc: 'Drop any PDF, image, or paste text' },
-                  { step: '02', icon: '🔬', title: 'AI OCR Scan', desc: 'Extract all biomarker values instantly' },
-                  { step: '03', icon: '🛡️', title: 'Risk Analysis', desc: 'WHO/ICMR safety rule validation' },
-                  { step: '04', icon: '📊', title: 'Dashboard', desc: 'Full intelligence command center' },
-                ].map((s, i) => (
-                  <div key={i} className="glass-card rounded-2xl p-4 text-center relative overflow-hidden group hover:shadow-lg transition-all">
-                    <div className="text-2xl mb-2">{s.icon}</div>
-                    <div className="text-[9px] font-black text-red-400 uppercase tracking-widest mb-1">{s.step}</div>
-                    <h4 className="text-xs font-bold text-slate-800 mb-1" style={{ fontFamily: 'Outfit, sans-serif' }}>{s.title}</h4>
-                    <p className="text-[10px] text-slate-400 leading-snug">{s.desc}</p>
-                    {i < 3 && (
-                      <ChevronRight className="h-4 w-4 text-red-300 absolute top-1/2 -right-2 -translate-y-1/2 hidden sm:block" />
-                    )}
+                  { name: 'Cardiac Troponin I', val: '0.02 ng/mL', ref: '< 0.04', status: 'Optimal', badge: 'badge-normal' },
+                  { name: 'Fasting Blood Sugar', val: '124 mg/dL', ref: '70 - 140', status: 'Normal', badge: 'badge-normal' },
+                  { name: 'Serum Creatinine', val: '1.9 mg/dL', ref: '0.6 - 1.2', status: 'Warning', badge: 'badge-warning' },
+                ].map((row, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 rounded-xl border border-white/5 bg-white/[0.01] text-xs">
+                    <span className="font-bold text-slate-300">{row.name}</span>
+                    <div className="flex items-center gap-4">
+                      <span className="font-mono text-slate-400">{row.val}</span>
+                      <span className={row.badge} style={{ fontSize: '8px', padding: '1px 6px' }}>{row.status}</span>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
+          </div>
+        </main>
+      )}
 
-            {/* ── Sandbox Selector ────────────────────── */}
-            <div className="w-full max-w-4xl animate-fade-in">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(220,20,60,0.3), transparent)' }} />
-                <div className="flex items-center gap-2">
-                  <AnimatedRedCross size={16} pulse={false} glow={false} spin={false} />
-                  <span className="text-xs font-bold text-red-400 uppercase tracking-widest">
-                    Try a Demo Case
-                  </span>
-                  <AnimatedRedCross size={16} pulse={false} glow={false} spin={false} />
+      {/* ╔══════════════════════════════════════════════╗
+          ║  SCREEN 2 — CLEAN UPLOAD SCREEN             ║
+          ╚══════════════════════════════════════════════╝ */}
+      {screen === 'upload' && (
+        <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-12 flex flex-col justify-center animate-scale-in relative">
+          <BackgroundECGGraph />
+          
+          <div className="text-center mb-8">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-50" style={{ fontFamily: 'Geist, sans-serif' }}>
+              Analyze Medical Report
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400 mt-2 font-medium">
+              Upload diagnostic sheets or input text to run fuzzy AI clinical assessments
+            </p>
+          </div>
+
+          <div className="glass-card rounded-2xl p-6 md:p-8 flex flex-col gap-6 border-white/5 cyan-glow-subtle">
+            
+            {/* Upload Zone */}
+            <div
+              className={`drop-zone p-8 flex flex-col items-center justify-center min-h-[220px] relative transition-all ${isDragOver ? 'dragover' : ''}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDropFile}
+            >
+              <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-white/5 text-slate-400 border border-white/10 text-[9px] uppercase font-bold px-2.5 py-0.5 rounded-full">
+                <Database className="h-2.5 w-2.5" />
+                Report Document
+              </div>
+
+              {!fileName && !isUploading ? (
+                <div className="flex flex-col items-center text-center gap-3">
+                  <div className="h-14 w-14 rounded-2xl bg-diag-cyan/5 border border-diag-cyan/15 flex items-center justify-center text-diag-cyan">
+                    <UploadCloud className="h-7 w-7" />
+                  </div>
+                  <label className="cursor-pointer">
+                    <span className="text-sm font-bold text-diag-cyan hover:text-diag-cyanHover transition-colors hover:underline block">
+                      Drag & Drop Report or Browse Files
+                    </span>
+                    <input type="file" className="hidden" accept=".pdf,.png,.jpg,.jpeg,.txt" onChange={handleFileSelect} />
+                  </label>
+                  <p className="text-[10px] text-slate-500 max-w-[200px] leading-relaxed">
+                    Supports PDF, PNG, JPG, or raw clinical lab texts
+                  </p>
                 </div>
-                <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(220,20,60,0.3), transparent)' }} />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                {/* Case A: Normal */}
-                <button
-                  onClick={() => handleLoadReport('normal')}
-                  className="glass-card glass-card-hover rounded-2xl p-5 text-left border border-slate-200 hover:border-emerald-200 group transition-all scan-beam-wrap relative overflow-hidden"
-                >
-                  <div className="scan-beam" style={{ animationDelay: '0s', animationDuration: '4s' }} />
-                  <span className="badge-normal mb-3 inline-block">Case A · Optimal</span>
-                  <h4 className="text-sm font-bold text-slate-800 group-hover:text-emerald-700 transition-colors mb-1" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                    Rahul Sharma (28, Male)
-                  </h4>
-                  <p className="text-[11px] text-slate-500 leading-snug mb-3">
-                    Baseline physiological check. Complete metabolics and lipids normal.
-                  </p>
-                  <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
-                    Launch Demo <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-                  </span>
-                </button>
-
-                {/* Case B: Critical */}
-                <button
-                  onClick={() => handleLoadReport('critical')}
-                  className="glass-card glass-card-hover rounded-2xl p-5 text-left border border-slate-200 hover:border-red-300 group transition-all scan-beam-wrap relative overflow-hidden vitals-glow"
-                >
-                  <div className="scan-beam" style={{ animationDelay: '1s', animationDuration: '3.5s' }} />
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="badge-critical">Case B · Critical</span>
-                    <AnimatedRedCross size={20} pulse glow spin={false} />
+              ) : isUploading ? (
+                <div className="w-full flex flex-col items-center gap-3 text-center">
+                  <Activity className="h-8 w-8 text-diag-cyan animate-pulse" />
+                  <div>
+                    <span className="text-xs font-semibold text-slate-300 block">{uploadStatus || `Reading ${fileName}…`}</span>
+                    <span className="text-[9px] text-slate-500 mt-0.5 block">{fileName}</span>
                   </div>
-                  <h4 className="text-sm font-bold text-slate-800 group-hover:text-red-600 transition-colors mb-1" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                    Amit Patil (45, Male)
-                  </h4>
-                  <p className="text-[11px] text-slate-500 leading-snug mb-3">
-                    Cardiac troponin elevation coupled with diabetic metabolic crisis.
-                  </p>
-                  <span className="text-[11px] font-bold text-red-500 flex items-center gap-1">
-                    Launch Demo <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-                  </span>
-                </button>
-
-                {/* Case C: Renal */}
-                <button
-                  onClick={() => handleLoadReport('renal_decline')}
-                  className="glass-card glass-card-hover rounded-2xl p-5 text-left border border-slate-200 hover:border-amber-200 group transition-all scan-beam-wrap relative overflow-hidden"
-                >
-                  <div className="scan-beam" style={{ animationDelay: '2s', animationDuration: '5s' }} />
-                  <span className="badge-warning mb-3 inline-block">Case C · Warning</span>
-                  <h4 className="text-sm font-bold text-slate-800 group-hover:text-amber-700 transition-colors mb-1" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                    Savita Dev (62, Female)
-                  </h4>
-                  <p className="text-[11px] text-slate-500 leading-snug mb-3">
-                    Renal creatinine clearance degradation with progressive anemia.
-                  </p>
-                  <span className="text-[11px] font-bold text-amber-600 flex items-center gap-1">
-                    Launch Demo <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-                  </span>
-                </button>
-              </div>
-
-              {/* ── Upload & Paste Panel ──────────────── */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                {/* Drop Zone */}
-                <div
-                  className={`drop-zone p-6 flex flex-col items-center justify-center min-h-[240px] relative transition-all ${isDragOver ? 'dragover' : ''}`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDropFile}
-                >
-                  <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-red-50 text-red-500 border border-red-100 text-[9px] uppercase font-bold px-2 py-0.5 rounded-full">
-                    <Database className="h-2.5 w-2.5" />
-                    File Input
+                  <div className="w-full bg-slate-900 h-1 rounded-full overflow-hidden max-w-xs">
+                    <div
+                      className="h-1 rounded-full bg-diag-cyan transition-all duration-200 shadow-[0_0_6px_rgba(56,189,248,0.5)]"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
                   </div>
-
-                  {!fileName && !isUploading ? (
-                    <div className="flex flex-col items-center text-center gap-3">
-                      <div className="relative">
-                        <div className="h-16 w-16 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center text-red-400">
-                          <UploadCloud className="h-8 w-8" />
-                        </div>
-                        <div className="absolute -top-1 -right-1">
-                          <AnimatedRedCross size={20} pulse glow spin={false} />
-                        </div>
-                      </div>
-                      <label className="cursor-pointer">
-                        <span className="text-sm font-bold text-red-500 hover:text-red-600 hover:underline block">
-                          Drag & Drop or Browse
-                        </span>
-                        <input type="file" className="hidden" accept=".pdf,.png,.jpg,.jpeg,.txt" onChange={handleFileSelect} />
-                      </label>
-                      <p className="text-[11px] text-slate-400 max-w-[180px] leading-snug">
-                        PDF, PNG, JPG or TXT lab reports accepted
-                      </p>
-                    </div>
-                  ) : isUploading ? (
-                    <div className="w-full flex flex-col items-center gap-3 text-center">
-                      <Activity className="h-8 w-8 text-red-500 animate-pulse" />
-                      <span className="text-xs font-semibold text-slate-600">Uploading {fileName}</span>
-                      <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                        <div
-                          className="h-1.5 rounded-full transition-all duration-300"
-                          style={{ width: `${uploadProgress}%`, background: 'linear-gradient(90deg, #DC143C, #EF4444)' }}
-                        />
-                      </div>
-                      <span className="text-[11px] font-black text-red-600">{uploadProgress}%</span>
-                    </div>
-                  ) : (
-                    <div className="w-full flex flex-col items-center gap-3 text-center">
-                      <div className="h-12 w-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-500">
-                        <FileText className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <span className="text-xs font-bold text-slate-700 block truncate max-w-[160px]">{fileName}</span>
-                        <span className="badge-normal mt-2 inline-block">OCR Pre-loaded</span>
-                      </div>
-                      <div className="flex gap-2 w-full mt-1">
-                        <button onClick={() => handleParseCustomText(inputText)} className="btn-emergency flex-1 text-xs py-2">
-                          <Sparkles className="h-3.5 w-3.5" />
-                          Run OCR Analysis
-                        </button>
-                        <button
-                          onClick={() => { setFileName(''); setInputText(''); }}
-                          className="p-2 bg-slate-100 hover:bg-red-50 border border-slate-200 hover:border-red-200 text-slate-400 hover:text-red-400 rounded-xl transition-all"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
+                  <span className="text-[10px] font-bold text-diag-cyan">{uploadProgress < 90 ? 'Analyzing with AI Vision...' : 'Finalizing extraction...'}</span>
+                </div>
+              ) : (
+                <div className="w-full flex flex-col items-center gap-3 text-center">
+                  <div className="h-12 w-12 rounded-xl bg-diag-emeraldSoft border border-diag-emerald/20 flex items-center justify-center text-diag-emerald">
+                    <FileText className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-slate-200 block truncate max-w-[240px]">{fileName}</span>
+                    {uploadStatus && (
+                      <span className={`text-[9px] font-bold mt-1.5 block leading-relaxed max-w-[240px] ${
+                        uploadStatus.startsWith('⚠') ? 'text-amber-400' : 'text-diag-emerald'
+                      }`}>
+                        {uploadStatus}
+                      </span>
+                    )}
+                    {ocrSource && (
+                      <span className="text-[8px] font-bold px-2 py-0.5 rounded-full bg-diag-cyan/5 border border-diag-cyan/15 text-diag-cyan mt-1 inline-block uppercase tracking-wider">
+                        {ocrSource}
+                      </span>
+                    )}
+                  </div>
+                  {inputText && (
+                    <div className="flex gap-2 w-full max-w-xs mt-1">
+                      <button onClick={() => handleParseCustomText(inputText)} className="btn-primary flex-1 text-xs py-2">
+                        Analyze Document
+                      </button>
+                      <button
+                        onClick={() => { setFileName(''); setInputText(''); setUploadStatus(''); setOcrSource(''); }}
+                        className="px-3 bg-white/5 hover:bg-diag-redSoft border border-white/5 hover:border-diag-red/20 text-slate-400 hover:text-diag-red rounded-xl transition-all"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
                     </div>
                   )}
                 </div>
+              )}
+            </div>
 
-                {/* Raw Text OCR Panel */}
-                <div className="glass-card-red rounded-2xl p-5 flex flex-col min-h-[240px] relative">
-                  <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-emerald-50 text-emerald-600 border border-emerald-100 text-[9px] uppercase font-bold px-2 py-0.5 rounded-full">
-                    <FileJson className="h-2.5 w-2.5" />
-                    Live Text OCR
-                  </div>
-                  <div className="flex justify-end gap-1.5 mt-1 mb-2">
-                    {[
-                      { label: 'CBC',    key: 'lipid_cbc' },
-                      { label: 'Renal',  key: 'renal_anemia' },
-                      { label: 'Cardiac', key: 'cardiac_emergency' },
-                    ].map(({ label, key }) => (
-                      <button
-                        key={key}
-                        onClick={() => setInputText(RAW_TEXT_TEMPLATES[key])}
-                        className="text-[10px] font-bold px-2.5 py-1 bg-white border border-slate-200 hover:border-red-300 hover:bg-red-50 hover:text-red-600 text-slate-600 rounded-lg transition-all"
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                  <textarea
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    placeholder="Paste raw report text here, or click a template above…"
-                    className="medical-input flex-1 font-mono text-[11px] resize-none min-h-[130px]"
-                  />
-                  <button onClick={() => handleParseCustomText(inputText)} className="btn-emergency w-full mt-3 text-xs py-2.5">
-                    <Cpu className="h-3.5 w-3.5" />
-                    Analyze Report Text
-                  </button>
+            {/* Pasting Section */}
+            <div className="flex flex-col gap-2 border-t border-white/[0.04] pt-6">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  Or Paste Raw Medical Assay Text
+                </span>
+                <div className="flex gap-1.5">
+                  {[
+                    { label: 'CBC Panel', key: 'lipid_cbc' },
+                    { label: 'Renal Panel', key: 'renal_anemia' },
+                    { label: 'Cardiac Panel', key: 'cardiac_emergency' },
+                  ].map(({ label, key }) => (
+                    <button
+                      key={key}
+                      onClick={() => { setInputText(RAW_TEXT_TEMPLATES[key]); setFileName(`template_${key}.txt`); }}
+                      className="text-[9px] font-bold px-2 py-1 bg-white/[0.02] border border-white/5 hover:border-diag-cyan/30 hover:bg-diag-cyan/5 text-slate-400 hover:text-diag-cyan rounded-lg transition-all"
+                    >
+                      {label}
+                    </button>
+                  ))}
                 </div>
               </div>
+              <textarea
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                placeholder="Paste diagnostics, range levels, or raw text reports here..."
+                className="medical-input min-h-[120px] font-mono text-[11px] resize-none"
+              />
+              <button
+                disabled={!inputText.trim()}
+                onClick={() => handleParseCustomText(inputText)}
+                className={`btn-primary w-full mt-2 text-xs py-2.5 ${!inputText.trim() ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                Analyze Copied Text
+              </button>
             </div>
-          </main>
 
-          {/* ── Footer with ECG ─────────────────────── */}
-          <div className="relative z-10 w-full max-w-7xl mx-auto px-6">
-            <ECGStrip color="rgba(220,20,60,0.4)" height={32} />
           </div>
-          <footer className="relative z-10 w-full border-t border-red-50 py-5 px-6 text-center bg-white/60">
-            <p className="text-xs text-slate-400 font-medium">
-              Vitalis AI · Hospital Intelligence Command Center · WHO/ICMR Safety Standards · 2026
-            </p>
-          </footer>
-        </div>
+        </main>
       )}
 
       {/* ╔══════════════════════════════════════════════╗
-          ║  SCREEN 2 — MEDICAL SCANNING TERMINAL       ║
+          ║  SCREEN 3 — CINEMATIC SCANNING PIPELINE     ║
           ╚══════════════════════════════════════════════╝ */}
       {screen === 'scanning' && (
-        <div
-          className="flex flex-col items-center justify-center min-h-screen px-6 py-16 relative overflow-hidden"
-          style={{ background: 'linear-gradient(160deg, #fff5f5 0%, #F8FBFF 50%, #FFF 100%)' }}
-        >
-          <BloodCells />
-          <FloatingCrosses />
-          <DataStreams count={4} />
-
-          <div className="w-full max-w-md relative z-10 animate-scale-in">
-
-            {/* Large cross above card */}
-            <div className="flex justify-center mb-6">
-              <AnimatedRedCross size={64} pulse spin glow />
+        <main className="flex-1 flex flex-col items-center justify-center px-6 py-12 max-w-md mx-auto w-full animate-scale-in">
+          
+          <div className="glass-card rounded-2xl p-6 border-white/5 text-center w-full shadow-2xl relative">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 h-1 w-24 bg-diag-cyan/30 rounded-full" />
+            
+            <div className="h-12 w-12 rounded-full bg-diag-cyan/5 border border-diag-cyan/20 flex items-center justify-center text-diag-cyan mx-auto mb-4 relative z-10 animate-pulse">
+              <Cpu className="h-6 w-6 animate-spin" style={{ animationDuration: '3s' }} />
             </div>
 
-            {/* Header Card */}
-            <div className="glass-card-red rounded-3xl p-8 text-center mb-4">
-              <HospitalStatusBadge status="SCANNING" className="mb-4 mx-auto" />
+            <h2 className="text-lg font-bold text-slate-50 mb-1" style={{ fontFamily: 'Geist, sans-serif' }}>
+              Deciphering Diagnostics
+            </h2>
+            <p className="text-[10px] font-bold text-diag-cyan uppercase tracking-widest">
+              DiagnosIQ pipeline running
+            </p>
 
-              <h2 className="text-2xl font-black text-slate-800 mb-1.5" style={{ fontFamily: 'Outfit, sans-serif', letterSpacing: '-0.02em' }}>
-                Analysing Your Report
-              </h2>
-              <p className="text-sm text-slate-400 font-medium mb-4">
-                Vitalis Hospital AI Pipeline Running
-              </p>
+            <div className="my-6">
+              <ECGStrip color="#38BDF8" height={32} />
+            </div>
 
-              {/* ECG in scanning */}
-              <ECGStrip color="#DC143C" height={44} className="mb-5" />
-
-              {/* Step Indicators */}
-              <div className="flex items-center justify-between mb-5 px-1">
-                {PROCESS_STEPS.map((step, i) => {
-                  const stepNum = i + 1;
-                  const isDone   = stepNum < currentStep;
-                  const isActive = stepNum === currentStep;
-                  return (
-                    <React.Fragment key={step.id}>
-                      <div className="flex flex-col items-center gap-1">
-                        <div className={`h-9 w-9 rounded-xl flex items-center justify-center text-xs font-bold transition-all ${
-                          isDone ? 'step-complete' : isActive ? 'step-active' : 'step-pending'
-                        }`}>
-                          {isDone
-                            ? <CheckCircle className="h-4 w-4" />
-                            : isActive
-                              ? <AnimatedRedCross size={16} pulse={false} glow={false} spin={false} />
-                              : step.icon
-                          }
-                        </div>
-                        <span className={`text-[9px] font-bold uppercase tracking-wide ${
-                          isDone ? 'text-emerald-600' : isActive ? 'text-red-500' : 'text-slate-300'
-                        }`}>
-                          {step.label}
-                        </span>
+            {/* Steps Horizontal row */}
+            <div className="flex items-center justify-between mb-6 px-1">
+              {PROCESS_STEPS.map((step, idx) => {
+                const stepNum = idx + 1;
+                const isDone   = stepNum < currentStep;
+                const isActive = stepNum === currentStep;
+                return (
+                  <React.Fragment key={step.id}>
+                    <div className="flex flex-col items-center gap-1">
+                      <div className={`h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold transition-all ${
+                        isDone ? 'step-complete' : isActive ? 'step-active' : 'step-pending'
+                      }`}>
+                        {isDone ? <CheckCircle className="h-3.5 w-3.5" /> : step.icon}
                       </div>
-                      {i < PROCESS_STEPS.length - 1 && (
-                        <div className={`flex-1 h-px mx-1.5 mb-5 transition-all ${isDone ? 'bg-emerald-300' : isActive ? 'bg-red-200' : 'bg-slate-200'}`} />
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </div>
-
-              {/* Progress Bar */}
-              <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mb-2">
-                <div
-                  className="h-2.5 rounded-full transition-all duration-300"
-                  style={{
-                    width: `${scanProgress}%`,
-                    background: 'linear-gradient(90deg, #DC143C 0%, #EF4444 50%, #2563EB 100%)',
-                    boxShadow: '0 0 8px rgba(220,20,60,0.4)',
-                  }}
-                />
-              </div>
-              <div className="flex justify-between text-[11px] font-semibold text-slate-400">
-                <span>Processing…</span>
-                <span className="text-red-500 font-black vitals-counter">{Math.round(scanProgress)}%</span>
-              </div>
+                      <span className={`text-[8px] font-bold uppercase tracking-wider ${
+                        isDone ? 'text-diag-emerald' : isActive ? 'text-diag-cyan' : 'text-slate-600'
+                      }`}>
+                        {step.label.split(' ')[0]}
+                      </span>
+                    </div>
+                    {idx < PROCESS_STEPS.length - 1 && (
+                      <div className={`flex-1 h-px mx-1 mb-4 transition-all ${isDone ? 'bg-diag-emerald/30' : isActive ? 'bg-diag-cyan/30' : 'bg-white/[0.02]'}`} />
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </div>
 
-            {/* Log Terminal */}
-            <div className="glass-card rounded-2xl p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="flex gap-1">
-                  <div className="h-2.5 w-2.5 rounded-full bg-red-400" />
-                  <div className="h-2.5 w-2.5 rounded-full bg-amber-300" />
-                  <div className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
-                </div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">AI Processing Log</span>
-              </div>
+            {/* Circular Progress & Text logs */}
+            <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden mb-2">
               <div
-                className="font-mono text-[10px] h-40 overflow-y-auto flex flex-col gap-1.5 rounded-xl p-3 border"
-                style={{ background: '#FFF8F8', borderColor: 'rgba(220,20,60,0.08)' }}
-              >
-                {completedLogs.map((log, idx) => (
-                  <div key={idx} className="flex items-start gap-2 text-emerald-600">
-                    <CheckCircle className="h-3 w-3 mt-0.5 shrink-0" />
-                    <span>{log}</span>
-                  </div>
-                ))}
-                {activeLog && (
-                  <div className="flex items-start gap-2 text-red-500 animate-pulse">
-                    <Cpu className="h-3 w-3 mt-0.5 shrink-0 animate-spin" />
-                    <span>{activeLog}</span>
-                  </div>
-                )}
-              </div>
+                className="h-1.5 rounded-full bg-diag-cyan transition-all duration-300 shadow-[0_0_8px_rgba(56,189,248,0.4)]"
+                style={{ width: `${scanProgress}%` }}
+              />
+            </div>
+            
+            <div className="flex justify-between text-[10px] font-bold text-slate-500">
+              <span>Sequencing metric hashes...</span>
+              <span className="text-diag-cyan font-mono">{Math.round(scanProgress)}%</span>
             </div>
           </div>
-        </div>
+
+          {/* Sequential Logs Terminal */}
+          <div className="glass-card rounded-2xl p-4 border border-white/5 w-full mt-4 text-left">
+            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block mb-2.5">
+              Assay Pipeline Telemetry Log
+            </span>
+            <div className="font-mono text-[9px] h-32 overflow-y-auto flex flex-col gap-1.5 p-2 bg-slate-950/60 rounded-xl border border-white/5 text-slate-400">
+              {completedLogs.map((log, idx) => (
+                <div key={idx} className="flex items-start gap-1.5 text-diag-emerald">
+                  <CheckCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                  <span>{log}</span>
+                </div>
+              ))}
+              {activeLog && (
+                <div className="flex items-start gap-1.5 text-diag-cyan animate-pulse">
+                  <Cpu className="h-3 w-3 mt-0.5 shrink-0 animate-spin" />
+                  <span>{activeLog}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
       )}
 
       {/* ╔══════════════════════════════════════════════╗
-          ║  SCREEN 3 — CLINICAL DASHBOARD              ║
+          ║  SCREEN 3 — ENTERPRISE CLINICAL DASHBOARD   ║
           ╚══════════════════════════════════════════════╝ */}
       {screen === 'analysis' && activeReport && (
-        <div
-          className={`min-h-screen flex flex-col transition-all duration-700 ${dashboardVisible ? 'opacity-100' : 'opacity-0'}`}
-          style={{ background: 'linear-gradient(160deg, #FFF8F8 0%, #F0F6FF 60%, #EFF6FF 100%)' }}
+        <main
+          className={`flex-1 flex flex-col transition-all duration-500 ${dashboardVisible ? 'opacity-100' : 'opacity-0'}`}
         >
-
-          {/* ── Dashboard Header ────────────────────── */}
-          <header className="bg-white/90 backdrop-blur-md border-b px-6 py-3 flex items-center justify-between sticky top-0 z-20"
-            style={{ borderColor: 'rgba(220,20,60,0.12)' }}
-          >
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => { setScreen('landing'); setSelectedOrgan(null); setDashboardVisible(false); }}
-                className="text-xs font-semibold text-slate-500 hover:text-red-500 flex items-center gap-1.5 transition-colors"
-              >
-                ← Back
-              </button>
-              <div className="flex items-center gap-2">
-                <AnimatedRedCross size={28} pulse glow spin={false} />
-                <span className="text-sm font-black text-slate-800" style={{ fontFamily: 'Outfit, sans-serif' }}>
-                  Vitalis <span className="text-gradient-red">AI</span>
-                </span>
-              </div>
+          {/* Sub Header row for patient specs */}
+          <div className="border-b border-white/[0.04] bg-white/[0.01] px-6 py-2.5 flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-semibold text-slate-300">
+                Patient: <strong className="text-slate-50 font-bold">{activeReport.patient_name}</strong>
+              </span>
+              <span className="h-3.5 w-px bg-white/10" />
+              <span className="text-xs text-slate-400 font-medium">Collected: {activeReport.report_date}</span>
             </div>
 
-            {/* Patient + Risk */}
-            <div className="hidden sm:flex items-center gap-2">
-              <span className="text-xs text-slate-500 font-medium">{activeReport.patient_name}</span>
+            <div className="flex items-center gap-2">
+              {/* Dashboard Back Button */}
+              <button
+                onClick={() => { setScreen('upload'); setSelectedOrgan(null); }}
+                className="px-2.5 py-1 rounded-lg text-[10px] font-bold text-slate-400 hover:text-slate-200 border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition-all flex items-center gap-1"
+              >
+                ← Change Case
+              </button>
+
+              {/* Status Pill Badge */}
               {activeReport.overall_risk === 'critical' && (
-                <span className="badge-critical">
-                  <span className="pulse-dot" style={{ width: 6, height: 6 }} /> Critical
+                <span className="badge-critical text-[9px] py-0.5 px-2">
+                  <span className="pulse-dot bg-diag-red" style={{ width: 5, height: 5 }} /> Critical Alert
                 </span>
               )}
-              {activeReport.overall_risk === 'high' && <span className="badge-critical">High Risk</span>}
-              {activeReport.overall_risk === 'medium' && <span className="badge-warning">Warning</span>}
-              {(activeReport.overall_risk === 'normal' || activeReport.overall_risk === 'low') && <span className="badge-normal">Normal</span>}
+              {activeReport.overall_risk === 'high' && <span className="badge-critical text-[9px] py-0.5 px-2">High Deviation</span>}
+              {activeReport.overall_risk === 'medium' && <span className="badge-warning text-[9px] py-0.5 px-2">Moderate Warning</span>}
+              {(activeReport.overall_risk === 'normal' || activeReport.overall_risk === 'low') && <span className="badge-normal text-[9px] py-0.5 px-2">Cleared</span>}
+
               {demoMode && showDemoBanner && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-violet-100 border border-violet-200 text-violet-700">
+                <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-indigo-500/10 border border-indigo-400/20 text-indigo-400">
                   Demo Mode
                 </span>
               )}
             </div>
-
-            {/* Tabs */}
-            <div className="flex bg-slate-100 p-0.5 rounded-xl border border-slate-200">
+            
+            {/* View tabs */}
+            <div className="flex bg-white/[0.02] p-0.5 rounded-xl border border-white/5">
               {['command', 'insights', 'trends'].map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-3 py-1.5 rounded-[10px] text-xs font-bold transition-all capitalize ${
+                  className={`px-3 py-1 rounded-[8px] text-[10px] font-bold transition-all uppercase tracking-wider ${
                     activeTab === tab
-                      ? 'bg-white shadow-sm'
-                      : 'text-slate-400 hover:text-slate-600'
+                      ? 'bg-diag-cyan text-diag-navy shadow-md'
+                      : 'text-slate-400 hover:text-slate-200'
                   }`}
-                  style={activeTab === tab ? { color: '#DC143C' } : {}}
                 >
-                  {tab === 'command' ? '📊 Analysis' : tab === 'insights' ? '🧠 AI Insights' : '📈 Trends'}
+                  {tab === 'command' ? 'Overview' : tab === 'insights' ? 'AI Insights' : 'Chronology'}
                 </button>
               ))}
             </div>
-          </header>
+          </div>
 
-          {/* ECG bar below header */}
-          <ECGStrip color="rgba(220,20,60,0.5)" height={28} />
-
-          {/* Main Grid */}
-          <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 max-w-7xl mx-auto w-full">
-            <div className="lg:col-span-4 h-fit lg:sticky lg:top-[88px]">
+          {/* Master Dashboard Panel Grid */}
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 max-w-7xl mx-auto w-full relative z-10">
+            
+            {/* Left side Organ stress visualization */}
+            <div className="lg:col-span-4 h-fit lg:sticky lg:top-[120px]">
               <AnatomicalVisualizer
                 organScores={activeReport.organScores}
                 activeOrgan={selectedOrgan}
@@ -904,6 +912,8 @@ export default function App() {
                 overallRisk={activeReport.overall_risk}
               />
             </div>
+
+            {/* Right side telemetries */}
             <div className="lg:col-span-8 flex flex-col gap-6">
               {activeTab === 'command' ? (
                 <RiskDashboard
@@ -912,6 +922,8 @@ export default function App() {
                   onSelectOrgan={setSelectedOrgan}
                   onPrintPlan={() => setScreen('print')}
                   onShowTrends={() => setActiveTab('trends')}
+                  onSaveReport={handleSaveReport}
+                  isSaved={isSaved}
                 />
               ) : activeTab === 'insights' ? (
                 <AIInsightPanel reportData={activeReport} />
@@ -924,17 +936,160 @@ export default function App() {
           {showEmergency && criticalFlags.length > 0 && (
             <EmergencyAlert flags={criticalFlags} onClose={() => setShowEmergency(false)} />
           )}
-        </div>
+        </main>
       )}
 
       {/* ╔══════════════════════════════════════════════╗
-          ║  SCREEN 4 — PRINT ACTION PLAN               ║
+          ║  SCREEN 4 — CLINICAL PRINT ACTION PLAN      ║
           ╚══════════════════════════════════════════════╝ */}
       {screen === 'print' && activeReport && (
-        <div className="min-h-screen bg-slate-50 p-6">
+        <main className="min-h-screen bg-slate-900/60 p-6 flex flex-col justify-center max-w-3xl mx-auto w-full relative z-10">
+          <div className="mb-4">
+            <button
+              onClick={() => setScreen('analysis')}
+              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition-all flex items-center gap-1.5"
+            >
+              ← Back to Analysis
+            </button>
+          </div>
           <PrintableActionPlan reportData={activeReport} onBack={() => setScreen('analysis')} />
+        </main>
+      )}
+
+      {/* ╔══════════════════════════════════════════════╗
+          ║  FLOATING CLINICAL AI CHAT ASSISTANT        ║
+          ╚══════════════════════════════════════════════╝ */}
+      {screen === 'analysis' && activeReport && (
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 font-sans select-none pointer-events-auto">
+          
+          {/* Chat Window */}
+          {chatOpen && (
+            <div className="w-[360px] sm:w-[380px] h-[480px] rounded-2xl glass-card border border-white/5 shadow-2xl flex flex-col overflow-hidden animate-scale-in relative z-50">
+              
+              {/* Header */}
+              <div className="px-4 py-3 flex items-center justify-between border-b border-white/5 bg-diag-navy/90 backdrop-blur-md">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-diag-cyan animate-pulse" />
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-100 uppercase tracking-wider flex items-center gap-1.5" style={{ fontFamily: 'Geist, sans-serif' }}>
+                      <Brain className="h-3.5 w-3.5 text-diag-cyan animate-pulse" />
+                      DiagnosIQ Chat Assistant
+                    </h4>
+                    <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest block mt-0.5">Clinical AI Telemetry Agent</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setChatOpen(false)}
+                  className="p-1 rounded bg-white/5 hover:bg-white/10 text-slate-400 hover:text-slate-200 border border-white/5 text-[9px] font-black animate-pulse"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Message History Terminal */}
+              <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-3 font-mono text-[10px]" style={{ maxHeight: '310px' }}>
+                {chatMessages.map((msg, idx) => {
+                  const isModel = msg.role === 'model';
+                  return (
+                    <div
+                      key={idx}
+                      className={`flex flex-col max-w-[85%] rounded-2xl p-3 border leading-relaxed ${
+                        isModel
+                          ? 'self-start bg-white/[0.01] border-white/5 text-slate-300'
+                          : 'self-end bg-diag-cyan/5 border-diag-cyan/20 text-slate-100 text-right'
+                      }`}
+                    >
+                      <span className={`text-[8px] font-bold uppercase tracking-wider mb-1 block ${
+                        isModel ? 'text-diag-cyan' : 'text-indigo-400'
+                      }`}>
+                        {isModel ? '🩺 DiagnosIQ AI' : '👤 You (Patient)'}
+                      </span>
+                      <p className="whitespace-pre-line text-left leading-normal font-sans text-[11px] font-medium text-slate-200">{msg.text}</p>
+                    </div>
+                  );
+                })}
+                {chatLoading && (
+                  <div className="self-start flex flex-col max-w-[80%] rounded-2xl p-3 bg-white/[0.01] border border-white/5 text-slate-400 animate-pulse">
+                    <span className="text-[8px] font-bold text-diag-cyan uppercase tracking-wider mb-1 block">🩺 DiagnosIQ AI is thinking...</span>
+                    <div className="flex gap-1 items-center mt-1">
+                      <div className="h-1.5 w-1.5 rounded-full bg-diag-cyan animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <div className="h-1.5 w-1.5 rounded-full bg-diag-cyan animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <div className="h-1.5 w-1.5 rounded-full bg-diag-cyan animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Starter Quick Bubbles */}
+              {chatMessages.length === 1 && !chatLoading && (
+                <div className="px-4 py-1.5 flex flex-wrap gap-1.5 border-t border-white/[0.03] mb-1">
+                  {[
+                    { text: 'Explain my high risk markers', q: 'Explain what biomarkers are out of range or carry elevated risks in my report' },
+                    { text: 'How to improve kidney health?', q: 'How can I protect or improve my renal system and creatinine clearance index?' },
+                    { text: 'What does Glucose represent?', q: 'What does my glucose value represent and how can I maintain metabolic health?' }
+                  ].map((bub, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleSendMessage(bub.q)}
+                      className="text-[9px] font-bold px-2 py-1 bg-white/[0.02] border border-white/5 hover:border-diag-cyan/35 text-slate-400 hover:text-diag-cyan rounded-lg transition-all text-left"
+                    >
+                      💡 {bub.text}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Input Area */}
+              <div className="p-3 border-t border-white/5 bg-diag-navy/80 backdrop-blur-md mt-auto flex gap-2">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleSendMessage(chatInput); }}
+                  placeholder="Ask about kidney GFR, glucose, or cardiac risks..."
+                  className="medical-input flex-1 text-xs py-2 px-3 focus:border-diag-cyan border-white/5"
+                  disabled={chatLoading}
+                />
+                <button
+                  onClick={() => handleSendMessage(chatInput)}
+                  disabled={!chatInput.trim() || chatLoading}
+                  className={`px-3 py-2 bg-diag-cyan text-diag-navy font-bold text-xs rounded-xl flex items-center justify-center transition-all ${
+                    !chatInput.trim() || chatLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.02]'
+                  }`}
+                >
+                  Send
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Trigger button bubble */}
+          <button
+            onClick={() => setChatOpen(prev => !prev)}
+            className="h-12 w-12 rounded-full border border-diag-cyan/30 bg-diag-navy flex items-center justify-center text-diag-cyan hover:text-white transition-all shadow-2xl focus:outline-none relative group active:scale-95 duration-200 select-none hover:border-diag-cyan pointer-events-auto"
+            style={{
+              boxShadow: '0 8px 32px rgba(56, 189, 248, 0.15), inset 0 0 12px rgba(56, 189, 248, 0.1)',
+            }}
+          >
+            <Brain className="h-5.5 w-5.5 animate-pulse text-diag-cyan group-hover:scale-105 transition-transform" />
+            
+            {/* Unread badge pointer */}
+            {!chatOpen && chatMessages.length === 1 && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-diag-cyan opacity-75" />
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-diag-cyan text-[7px] font-black items-center justify-center text-diag-navy">!</span>
+              </span>
+            )}
+          </button>
         </div>
       )}
+
+      {/* ── Footer ────────────────────────────────────────── */}
+      <footer className="relative z-10 w-full border-t border-white/[0.04] py-5 px-6 text-center mt-auto bg-diag-bg/60">
+        <p className="text-[10px] text-slate-500 font-medium tracking-wide">
+          DiagnosIQ · Enterprise AI Preventive Health Platform · WHO & ICMR Reference Compliant · 2026
+        </p>
+      </footer>
     </div>
   );
 }

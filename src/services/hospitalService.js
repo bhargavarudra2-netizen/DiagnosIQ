@@ -386,9 +386,18 @@ export async function getHospitalsForReport(riskLevel = 'low') {
     };
   }
 
-  // Overpass failed — use curated fallback but attach real user location for map
+  // Overpass failed — use curated fallback but calculate real distances to user Location and re-sort by nearest!
+  const fallbackList = getFallbackHospitals(riskLevel).map(h => {
+    const dist = haversineDistance(userLocation.lat, userLocation.lng, h.coordinates.lat, h.coordinates.lng);
+    return {
+      ...h,
+      distance: parseFloat(dist.toFixed(1))
+    };
+  });
+  const sortedFallback = sortByDistance(fallbackList, userLocation.lat, userLocation.lng);
+
   return {
-    hospitals: getFallbackHospitals(riskLevel),
+    hospitals: sortedFallback,
     userLocation,
     isLive: false,
   };

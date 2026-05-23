@@ -7,7 +7,7 @@ import { Activity, TrendingUp, TrendingDown, Clock, ShieldAlert } from 'lucide-r
 import { BIOMARKER_RANGES } from '../services/medicalEngine';
 
 /* ══════════════════════════════════════════════════════════
-   TREND ANALYSIS — Clinical Light Theme
+   TREND ANALYSIS — Dark Mode Analytics
    ══════════════════════════════════════════════════════════ */
 
 const MARKERS = [
@@ -41,21 +41,22 @@ function computeProjection(data) {
   };
 }
 
-// Custom tooltip for Recharts
+// Custom tooltip for Recharts in dark mode
 const ChartTooltip = ({ active, payload, label }) => {
   if (!active || !payload || !payload.length) return null;
   return (
     <div style={{
-      background: '#FFFFFF',
-      border: '1px solid #BFDBFE',
-      borderRadius: '10px',
+      background: 'var(--diag-navy)',
+      border: '1px solid var(--diag-border)',
+      borderRadius: '12px',
       padding: '10px 14px',
-      boxShadow: '0 4px 20px rgba(37,99,235,0.12)',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
       fontSize: '12px',
     }}>
-      <p style={{ fontWeight: 700, color: '#0F172A', marginBottom: 4 }}>{label}</p>
+      <p style={{ fontWeight: 700, color: 'var(--diag-text)', marginBottom: 4, fontFamily: 'Geist, sans-serif' }}>{label}</p>
       {payload.map((p, i) => (
-        <p key={i} style={{ color: p.color, fontWeight: 600 }}>
+        <p key={i} style={{ color: p.color, fontWeight: 600, fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: p.color }} />
           {p.name}: {p.value}
         </p>
       ))}
@@ -68,13 +69,13 @@ export default function TrendAnalysis({ historicalData }) {
 
   if (!historicalData || historicalData.length === 0) {
     return (
-      <div className="glass-card rounded-2xl p-10 flex flex-col items-center justify-center text-center min-h-[280px]">
-        <Activity className="h-10 w-10 text-blue-300 mb-3" />
-        <h4 className="text-base font-bold text-slate-600" style={{ fontFamily: 'Outfit, sans-serif' }}>
-          No Historical Records
+      <div className="glass-card rounded-2xl p-10 flex flex-col items-center justify-center text-center min-h-[280px] border-white/5">
+        <Activity className="h-9 w-9 text-slate-500 mb-3 animate-pulse" />
+        <h4 className="text-sm font-bold text-slate-400" style={{ fontFamily: 'Geist, sans-serif' }}>
+          No Chronological Data Available
         </h4>
-        <p className="text-sm text-slate-400 mt-1 max-w-xs">
-          Upload secondary reports to track biomarker trends and project future risk trajectories.
+        <p className="text-xs text-slate-500 mt-1 max-w-xs leading-normal">
+          Upload secondary reports to track biomarker trends and map projected risk trajectories.
         </p>
       </div>
     );
@@ -103,30 +104,30 @@ export default function TrendAnalysis({ historicalData }) {
   const trendIsUp = projection && projection.percentageChange > 0;
 
   return (
-    <div className="glass-card rounded-2xl p-6 flex flex-col gap-5">
+    <div className="glass-card rounded-2xl p-5 border border-white/5 flex flex-col gap-5">
 
-      {/* Header */}
+      {/* Header row */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2" style={{ fontFamily: 'Outfit, sans-serif' }}>
-            <Clock className="h-4 w-4 text-blue-500" />
-            Biomarker Progression & Projections
+          <h3 className="text-sm font-bold text-slate-200 flex items-center gap-2" style={{ fontFamily: 'Geist, sans-serif' }}>
+            <Clock className="h-4 w-4 text-diag-cyan" />
+            Biomarker Progression Projections
           </h3>
-          <p className="text-[11px] text-slate-400 mt-0.5">
-            AI tracks chronological variance and maps projected risk pathways
+          <p className="text-[10px] text-slate-400 mt-0.5 font-medium">
+            AI chronological mapping and forecasted hazard vector indicators
           </p>
         </div>
 
-        {/* Marker Selector */}
-        <div className="flex flex-wrap gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
+        {/* Marker selects */}
+        <div className="flex flex-wrap gap-1 bg-white/[0.02] p-0.5 rounded-xl border border-white/5">
           {MARKERS.map(m => (
             <button
               key={m.id}
               onClick={() => setSelectedMarker(m.id)}
-              className={`px-3 py-1.5 rounded-[10px] text-xs font-bold transition-all ${
+              className={`px-3 py-1 rounded-[8px] text-[10px] font-bold transition-all uppercase tracking-wider ${
                 selectedMarker === m.id
-                  ? 'bg-white text-blue-600 shadow-sm border border-blue-100'
-                  : 'text-slate-400 hover:text-slate-600'
+                  ? 'bg-white/10 text-diag-cyan shadow-sm'
+                  : 'text-slate-500 hover:text-slate-300'
               }`}
             >
               {m.name}
@@ -135,117 +136,124 @@ export default function TrendAnalysis({ historicalData }) {
         </div>
       </div>
 
-      {/* Chart Area */}
+      {/* Chart Canvas */}
       <div
-        className="h-72 w-full rounded-xl p-4 relative"
-        style={{ background: '#F8FBFF', border: '1px solid #BFDBFE' }}
+        className="h-64 w-full rounded-xl p-3 relative bg-slate-950/40 border border-white/5"
       >
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={fullData} margin={{ top: 10, right: 30, left: -10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(191,219,254,0.5)" />
+          <LineChart data={fullData} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--diag-border)" />
             <XAxis
               dataKey="date"
-              stroke="#94A3B8"
-              fontSize={11}
+              stroke="var(--diag-border)"
+              fontSize={10}
               tickLine={false}
-              tick={{ fill: '#94A3B8', fontWeight: 600 }}
+              tick={{ fill: '#64748B', fontWeight: 600, fontFamily: 'Geist, sans-serif' }}
             />
             <YAxis
-              stroke="#94A3B8"
-              fontSize={11}
+              stroke="var(--diag-border)"
+              fontSize={10}
               tickLine={false}
               domain={['auto', 'auto']}
-              tick={{ fill: '#94A3B8', fontWeight: 600 }}
+              tick={{ fill: '#64748B', fontWeight: 600, fontFamily: 'JetBrains Mono, monospace' }}
             />
-            <Tooltip content={<ChartTooltip />} />
+            <Tooltip content={<ChartTooltip />} cursor={{ stroke: 'var(--diag-border-active)', strokeWidth: 1 }} />
             <Legend
               verticalAlign="top"
-              height={36}
+              height={32}
               iconType="circle"
-              wrapperStyle={{ fontSize: '11px', color: '#475569', fontWeight: 600 }}
+              iconSize={6}
+              wrapperStyle={{ fontSize: '10px', color: '#64748B', fontWeight: 600, fontFamily: 'Geist, sans-serif', textTransform: 'uppercase', letterSpacing: '0.04em' }}
             />
 
-            {/* Reference threshold line */}
+            {/* Warning limit border */}
             {thresholdVal && (
               <ReferenceLine
                 y={thresholdVal}
-                stroke="rgba(239,68,68,0.5)"
+                stroke="rgba(239, 68, 68, 0.25)"
                 strokeDasharray="4 4"
                 label={{
-                  value: 'Warning Boundary',
-                  fill: 'rgba(239,68,68,0.6)',
-                  fontSize: 9,
-                  position: 'insideBottomRight'
+                  value: 'Risk Alert Threshold',
+                  fill: 'rgba(239, 68, 68, 0.45)',
+                  fontSize: 8,
+                  position: 'insideBottomRight',
+                  fontFamily: 'Geist, sans-serif',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
                 }}
               />
             )}
 
             {/* Historical line */}
             <Line
-              name="Historical"
+              name="Chronology"
               type="monotone"
               dataKey="value"
-              stroke="#2563EB"
-              strokeWidth={2.5}
-              dot={{ r: 5, fill: '#FFFFFF', stroke: '#2563EB', strokeWidth: 2.5 }}
-              activeDot={{ r: 7, fill: '#2563EB', strokeWidth: 0 }}
+              stroke="var(--diag-cyan)"
+              strokeWidth={2}
+              dot={{ r: 4, fill: 'var(--diag-bg)', stroke: 'var(--diag-cyan)', strokeWidth: 2 }}
+              activeDot={{ r: 6, fill: 'var(--diag-cyan)', strokeWidth: 0 }}
               connectNulls
             />
 
-            {/* Projection line */}
+            {/* Forecasted path line */}
             <Line
-              name="Projection"
+              name="AI Forecast"
               type="monotone"
               dataKey="projection"
-              stroke="#F59E0B"
+              stroke="var(--diag-amber)"
               strokeWidth={2}
-              strokeDasharray="5 5"
-              dot={{ r: 4, fill: '#FFFFFF', stroke: '#F59E0B', strokeWidth: 2 }}
+              strokeDasharray="4 4"
+              dot={{ r: 3.5, fill: 'var(--diag-bg)', stroke: 'var(--diag-amber)', strokeWidth: 1.5 }}
               connectNulls
             />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Trend Narrative */}
+      {/* Narrative block */}
       {projection && (
         <div
-          className="rounded-xl p-4 flex items-start gap-3"
+          className="rounded-xl p-4 flex items-start gap-3 border"
           style={{
-            background: isOptimal ? '#F0FDF4' : '#FEF2F2',
-            border: `1px solid ${isOptimal ? '#86EFAC' : '#FCA5A5'}`,
+            background: isOptimal ? 'rgba(16, 185, 129, 0.03)' : 'rgba(239, 68, 68, 0.03)',
+            borderColor: isOptimal ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
           }}
         >
           <div
-            className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: isOptimal ? '#DCFCE7' : '#FEE2E2' }}
+            className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border"
+            style={{
+              background: isOptimal ? 'rgba(16,185,129,0.05)' : 'rgba(239,68,68,0.05)',
+              borderColor: isOptimal ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)',
+            }}
           >
             {trendIsUp
-              ? <TrendingUp className="h-4.5 w-4.5" style={{ color: selectedMarker === 'hemoglobin' ? '#22C55E' : '#EF4444' }} />
-              : <TrendingDown className="h-4.5 w-4.5" style={{ color: selectedMarker === 'hemoglobin' ? '#EF4444' : '#22C55E' }} />
+              ? <TrendingUp className="h-4 w-4" style={{ color: selectedMarker === 'hemoglobin' ? '#10B981' : '#EF4444' }} />
+              : <TrendingDown className="h-4 w-4" style={{ color: selectedMarker === 'hemoglobin' ? '#EF4444' : '#10B981' }} />
             }
           </div>
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mb-1"
-              style={{ color: isOptimal ? '#16A34A' : '#DC2626' }}
+            <span
+              className="text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5 mb-1"
+              style={{ color: isOptimal ? '#10B981' : '#EF4444' }}
             >
               <ShieldAlert className="h-3.5 w-3.5" />
-              Trend Intelligence & Projected Risk Path
-            </h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Your <strong className="text-slate-800 capitalize">{selectedMarker}</strong> levels have changed by{' '}
-              <strong style={{ color: isOptimal ? '#16A34A' : '#DC2626' }}>
+              Chronological Deviation forecast
+            </span>
+            <p className="text-xs text-slate-400 leading-relaxed font-medium">
+              Diagnostic level for <strong className="text-slate-200 capitalize">{selectedMarker}</strong> shifted by{' '}
+              <strong style={{ color: isOptimal ? '#10B981' : '#EF4444' }}>
                 {projection.percentageChange > 0 ? '+' : ''}{projection.percentageChange.toFixed(1)}%
               </strong>{' '}
-              from baseline.{' '}
+              since baseline index.{' '}
               {projection.percentageChange > 0 && selectedMarker === 'creatinine' && (
-                <span>At the current trajectory, values may cross the kidney failure boundary by Q4 2026. Preventive lifestyle adjustments are highly advised.</span>
+                <span>Linear regression models project values crossing the renal insufficiency threshold by next quarter. Limit heavy NSAIDs and check BP routinely.</span>
               )}
               {projection.percentageChange < 0 && selectedMarker === 'hemoglobin' && (
-                <span>Declining hemoglobin indicates worsening anemia. Dietary intervention and nephrology assessment are recommended.</span>
+                <span>Downward trend forecasts potential development of severe anemia. Diet modifications under clinical supervision are recommended.</span>
               )}
               {isOptimal && (
-                <span>Change is within favorable recovery bounds. Maintain present clinical regimen.</span>
+                <span>Metric drift parameters are normal and showcase positive recovery. Continue maintaining present diet and hydration cycle.</span>
               )}
             </p>
           </div>
