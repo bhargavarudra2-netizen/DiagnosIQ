@@ -1,7 +1,10 @@
 import os
 import json
+import csv
+import io
 from datetime import datetime, timedelta
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Response
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from supabase import create_client, Client
@@ -15,7 +18,7 @@ SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Initialize FastAPI app
-app = FastAPI(title="Life-Log AI Service", version="0.4.0")
+app = FastAPI(title="Life-Log AI Service", version="0.5.0")
 
 # Verify configurations
 if not SUPABASE_URL or not SUPABASE_SERVICE_KEY:
@@ -43,6 +46,10 @@ class DailyPlanRequest(BaseModel):
 class AskAIRequest(BaseModel):
     user_id: str
     query: str
+
+class GuardianGrantRequest(BaseModel):
+    owner_id: str
+    guardian_email: str
 
 def clean_json_response(raw_text: str) -> str:
     """Cleans markdown code fences from JSON output if present."""
@@ -276,17 +283,14 @@ def get_analytics(user_id: str):
         raise HTTPException(status_code=500, detail="Supabase client is not configured.")
 
     try:
-        # 1. Fetch all entries for category breakdown and streaks
         entries_response = supabase.table("entries").select("timestamp, metadata, project_id").eq("user_id", user_id).execute()
         entries = entries_response.data or []
 
-        # Category mapping
         categories = {}
         for entry in entries:
             meta = entry.get("metadata") or {}
             category = meta.get("category")
             if not category:
-                # Fallback to check ai_summary if metadata doesn't contain category
                 ai_sum = entry.get("ai_summary") or {}
                 if isinstance(ai_sum, str):
                     try:
@@ -297,10 +301,8 @@ def get_analytics(user_id: str):
 
             categories[category] = categories.get(category, 0) + 1
 
-        # 2. Compute Streak (consecutive days of commits)
         streak = 0
         if entries:
-            # Extract date component as YYYY-MM-DD
             unique_days = sorted(list(set([
                 datetime.strptime(entry["timestamp"][:10], "%Y-%m-%d").date()
                 for entry in entries
@@ -310,26 +312,22 @@ def get_analytics(user_id: str):
             yesterday = today - timedelta(days=1)
 
             if unique_days:
-                # Check if user committed today or yesterday to preserve streak
                 if unique_days[0] == today or unique_days[0] == yesterday:
                     streak = 1
                     current_day = unique_days[0]
-                    # Loop backward to count consecutive days
                     for i in range(1, len(unique_days)):
                         diff = (current_day - unique_days[i]).days
                         if diff == 1:
                             streak += 1
                             current_day = unique_days[i]
                         elif diff > 1:
-                            break  # Streak broken
+                            break
                 else:
                     streak = 0
 
-        # 3. Fetch projects and count entries
         projects_response = supabase.table("projects").select("id, name, color").eq("user_id", user_id).execute()
         projects = projects_response.data or []
 
-        # Count entries per project
         project_counts = {}
         for entry in entries:
             p_id = entry.get("project_id")
@@ -354,6 +352,90 @@ def get_analytics(user_id: str):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch analytics: {str(e)}")
+
+
+@app.get("/export/json")
+def export_json(user_id: str):
+    try:
+        response = supabase.table("entries").select("timestamp, raw_text, activity, tags").eq("user_id", user_id).order("timestamp", {"ascending": False}).execute()
+        data = response.data or []
+        
+        json_str = json.dumps(data, indent=2)
+        
+        return Response(
+            content=json_str,
+            media_type="application/json",
+            headers={
+                "Content-Disposition": f"attachment; filename=lifelog_export_{datetime.now().strftime('%Y%m%d')}.json"
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
+
+
+@app.get("/export/csv")
+def export_csv(user_id: str):
+    try:
+        response = supabase.table("entries").select("timestamp, raw_text, activity, tags").eq("user_id", user_id).order("timestamp", {"ascending": False}).execute()
+        entries = response.data or []
+        
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Headers
+        writer.writerow(["Timestamp", "Log Entry", "Activity", "Tags"])
+        
+        for entry in entries:
+            tags_str = ", ".join(entry.get("tags") or [])
+            writer.writerow([
+                entry.get("timestamp"),
+                entry.get("raw_text"),
+                entry.get("activity") or "",
+                tags_str
+            ])
+            
+        csv_data = output.getvalue()
+        output.close()
+        
+        return Response(
+            content=csv_data,
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": f"attachment; filename=lifelog_export_{datetime.now().strftime('%Y%m%d')}.csv"
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
+
+
+@app.post("/guardian/grant")
+def grant_guardian_access(request: GuardianGrantRequest):
+    try:
+        supabase.table("guardian_access").upsert({
+            "owner_id": request.owner_id,
+            "guardian_email": request.guardian_email.strip().lower()
+        }, on_conflict="owner_id,guardian_email").execute()
+        return {"status": "success", "message": f"Access granted to {request.guardian_email}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to grant access: {str(e)}")
+
+
+@app.get("/guardian/entries")
+def get_guardian_entries(guardian_email: str):
+    try:
+        # 1. Fetch all owners who granted access to this guardian
+        grants_response = supabase.table("guardian_access").select("owner_id").eq("guardian_email", guardian_email.strip().lower()).execute()
+        owner_ids = [g["owner_id"] for g in (grants_response.data or [])]
+
+        if not owner_ids:
+            return {"status": "empty", "entries": []}
+
+        # 2. Fetch recent entries for these owners
+        entries_response = supabase.table("entries").select("timestamp, raw_text, activity, tags, user_id").in_("user_id", owner_ids).order("timestamp", {"ascending": False}).limit(100).execute()
+        
+        return {"status": "success", "entries": entries_response.data or []}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch guarded logs: {str(e)}")
 
 
 @app.get("/")
