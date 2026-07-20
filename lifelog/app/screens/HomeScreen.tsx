@@ -30,13 +30,31 @@ export default function HomeScreen() {
     setStatusMsg(null);
 
     try {
-      const { error } = await supabase.from('entries').insert({
-        user_id: user.id,
-        raw_text: text.trim(),
-        timestamp: new Date().toISOString(),
-      });
+      const { data, error } = await supabase
+        .from('entries')
+        .insert({
+          user_id: user.id,
+          raw_text: text.trim(),
+          timestamp: new Date().toISOString(),
+        })
+        .select('id')
+        .single();
 
       if (error) throw error;
+
+      // Trigger AI background structuring service
+      if (data?.id) {
+        const apiBaseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
+        fetch(`${apiBaseUrl}/process-entry`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ entry_id: data.id }),
+        }).catch((err) => {
+          console.warn('Failed to trigger background AI processing:', err);
+        });
+      }
 
       setText('');
       setStatusMsg('Moment committed.');
