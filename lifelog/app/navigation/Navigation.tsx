@@ -8,6 +8,7 @@ import { useAuthStore } from '../store/auth';
 import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
 import TimelineScreen from '../screens/TimelineScreen';
+import AIScreen from '../screens/AIScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
@@ -48,6 +49,11 @@ function MainTabNavigator() {
         name="Timeline" 
         component={TimelineScreen} 
         options={{ title: 'Timeline' }}
+      />
+      <Tab.Screen 
+        name="AI" 
+        component={AIScreen} 
+        options={{ title: 'AI Assistant' }}
       />
       <Tab.Screen 
         name="Profile" 
