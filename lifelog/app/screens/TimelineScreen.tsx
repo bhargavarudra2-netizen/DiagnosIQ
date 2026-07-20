@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/auth';
@@ -16,20 +17,26 @@ interface Entry {
   timestamp: string;
   raw_text: string;
   tags?: string[];
-  category?: string;
   activity?: string;
+  metadata?: {
+    category?: string;
+  };
 }
 
 interface SectionData {
-  title: string; // Date string: "YYYY-MM-DD" or "Today", "Yesterday"
+  title: string; // Date string: "YYYY-MM-DD"
   data: Entry[];
 }
 
+const CATEGORY_FILTERS = ['All', 'Coding', 'Study', 'Reading', 'Break', 'Exercise', 'Idea', 'Other'];
+
 export default function TimelineScreen() {
   const { user } = useAuthStore();
+  const [allEntries, setAllEntries] = useState<Entry[]>([]);
   const [sections, setSections] = useState<SectionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
   const formatHeaderDate = (dateStr: string) => {
     try {
@@ -55,9 +62,19 @@ export default function TimelineScreen() {
     }
   };
 
-  const groupEntriesByDate = (entriesList: Entry[]): SectionData[] => {
+  const groupEntriesByDate = useCallback((entriesList: Entry[]) => {
+    // Apply client-side filter
+    let filtered = entriesList;
+    if (selectedCategory !== 'All') {
+      filtered = entriesList.filter((entry) => {
+        const cat = entry.metadata?.category;
+        // Check exact match or check if category matches tag list
+        return cat === selectedCategory || (entry.tags && entry.tags.includes(selectedCategory.toLowerCase()));
+      });
+    }
+
     const map: { [key: string]: Entry[] } = {};
-    entriesList.forEach((entry) => {
+    filtered.forEach((entry) => {
       const dateObj = new Date(entry.timestamp);
       const dateKey = dateObj.toISOString().split('T')[0]; // "YYYY-MM-DD"
       if (!map[dateKey]) {
@@ -66,27 +83,27 @@ export default function TimelineScreen() {
       map[dateKey].push(entry);
     });
 
-    const sortedDates = Object.keys(map).sort((a, b) => b.localeCompare(a)); // Newest date first
+    const sortedDates = Object.keys(map).sort((a, b) => b.localeCompare(a));
 
     return sortedDates.map((date) => ({
       title: date,
-      // Sort entries within the same day by timestamp descending (newest at top or bottom? usually newest at bottom within a day, or descending overall. Let's do descending so newest commits are easy to see).
       data: map[date].sort(
         (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       ),
     }));
-  };
+  }, [selectedCategory]);
 
   const fetchEntries = useCallback(async () => {
     if (!user) return;
     try {
       const { data, error } = await supabase
         .from('entries')
-        .select('id, timestamp, raw_text, tags, activity')
+        .select('id, timestamp, raw_text, tags, activity, metadata')
         .eq('user_id', user.id)
         .order('timestamp', { ascending: false });
 
       if (error) throw error;
+      setAllEntries(data || []);
       setSections(groupEntriesByDate(data || []));
     } catch (error) {
       console.error('Error fetching entries:', error);
@@ -94,15 +111,14 @@ export default function TimelineScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [user]);
+  }, [user, groupEntriesByDate]);
 
   useEffect(() => {
     fetchEntries();
 
-    // Set up realtime channel
     if (!user) return;
     const channel = supabase
-      .channel('entries_realtime')
+      .channel('entries_realtime_timeline')
       .on(
         'postgres_changes',
         {
@@ -121,6 +137,11 @@ export default function TimelineScreen() {
       supabase.removeChannel(channel);
     };
   }, [user, fetchEntries]);
+
+  // Re-run grouping when selected category changes
+  useEffect(() => {
+    setSections(groupEntriesByDate(allEntries));
+  }, [selectedCategory, allEntries, groupEntriesByDate]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -167,6 +188,31 @@ export default function TimelineScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Category Filter Header */}
+      <View style={styles.filterBar}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
+          {CATEGORY_FILTERS.map((cat) => (
+            <TouchableOpacity
+              key={cat}
+              style={[
+                styles.filterChip,
+                selectedCategory === cat && styles.filterChipSelected,
+              ]}
+              onPress={() => setSelectedCategory(cat)}
+            >
+              <Text
+                style={[
+                  styles.filterChipText,
+                  selectedCategory === cat && styles.filterChipTextSelected,
+                ]}
+              >
+                {cat}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
       <SectionList
         sections={sections}
         keyExtractor={(item) => item.id}
@@ -181,8 +227,8 @@ export default function TimelineScreen() {
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No commits yet.</Text>
-            <Text style={styles.emptySubtext}>Type a moment on the Home screen to get started.</Text>
+            <Text style={styles.emptyText}>No commits match this filter.</Text>
+            <Text style={styles.emptySubtext}>Try selecting a different category above.</Text>
           </View>
         }
         contentContainerStyle={styles.listContainer}
@@ -201,6 +247,36 @@ const styles = StyleSheet.create({
     backgroundColor: '#0a0a0c',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  filterBar: {
+    backgroundColor: '#16161a',
+    borderBottomWidth: 1,
+    borderBottomColor: '#2a2a30',
+    paddingVertical: 10,
+  },
+  filterScroll: {
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  filterChip: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: '#2a2a30',
+  },
+  filterChipSelected: {
+    backgroundColor: '#ffffff',
+    borderColor: '#ffffff',
+  },
+  filterChipText: {
+    color: '#8e8e93',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  filterChipTextSelected: {
+    color: '#000000',
   },
   listContainer: {
     padding: 16,

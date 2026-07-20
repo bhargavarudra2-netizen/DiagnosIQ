@@ -9,6 +9,7 @@ import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
 import TimelineScreen from '../screens/TimelineScreen';
 import AIScreen from '../screens/AIScreen';
+import AnalyticsScreen from '../screens/AnalyticsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
@@ -54,6 +55,11 @@ function MainTabNavigator() {
         name="AI" 
         component={AIScreen} 
         options={{ title: 'AI Assistant' }}
+      />
+      <Tab.Screen 
+        name="Analytics" 
+        component={AnalyticsScreen} 
+        options={{ title: 'Analytics' }}
       />
       <Tab.Screen 
         name="Profile" 

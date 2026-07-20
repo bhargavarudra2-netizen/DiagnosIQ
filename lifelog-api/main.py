@@ -15,7 +15,7 @@ SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Initialize FastAPI app
-app = FastAPI(title="Life-Log AI Service", version="0.3.0")
+app = FastAPI(title="Life-Log AI Service", version="0.4.0")
 
 # Verify configurations
 if not SUPABASE_URL or not SUPABASE_SERVICE_KEY:
@@ -118,7 +118,6 @@ def generate_daily_summary(request: DailySummaryRequest):
         raise HTTPException(status_code=500, detail="API keys are missing.")
 
     try:
-        # Fetch all entries for that user on that specific date
         start_time = f"{request.date}T00:00:00+00:00"
         end_time = f"{request.date}T23:59:59+00:00"
 
@@ -159,7 +158,6 @@ def generate_daily_summary(request: DailySummaryRequest):
         clean_text = clean_json_response(ai_response.text)
         summary_content = json.loads(clean_text)
 
-        # Write to database (upsert based on unique constraint user_id + date)
         supabase.table("summaries").upsert({
             "user_id": request.user_id,
             "date": request.date,
@@ -178,7 +176,6 @@ def generate_daily_plan(request: DailyPlanRequest):
         raise HTTPException(status_code=500, detail="API keys are missing.")
 
     try:
-        # 1. Fetch yesterday's summary
         target_date = datetime.strptime(request.date, "%Y-%m-%d")
         yesterday_date_str = (target_date - timedelta(days=1)).strftime("%Y-%m-%d")
 
@@ -188,7 +185,6 @@ def generate_daily_plan(request: DailyPlanRequest):
         if yesterday_summary_response.data:
             yesterday_summary_text = json.dumps(yesterday_summary_response.data[0]["content"])
         else:
-            # If no summary, fetch raw entries for yesterday
             start_time = f"{yesterday_date_str}T00:00:00+00:00"
             end_time = f"{yesterday_date_str}T23:59:59+00:00"
             yesterday_entries = supabase.table("entries").select("raw_text").eq("user_id", request.user_id).gte("timestamp", start_time).lte("timestamp", end_time).execute()
@@ -215,7 +211,6 @@ def generate_daily_plan(request: DailyPlanRequest):
         clean_text = clean_json_response(ai_response.text)
         plan_content = json.loads(clean_text)
 
-        # Write to database (upsert based on unique constraint user_id + date)
         supabase.table("plans").upsert({
             "user_id": request.user_id,
             "date": request.date,
@@ -234,24 +229,16 @@ def ask_ai(request: AskAIRequest):
         raise HTTPException(status_code=500, detail="API keys are missing.")
 
     try:
-        # Search the user's entries using Full-Text Search.
-        # We search raw_text using textSearch or, if query has special chars, we can fetch recent 50 entries.
-        # For robustness, we will fetch the 50 most recent entries to provide a general chronological context.
-        # Plus, we try FTS to grab matching entries.
-        
-        # 1. Fetch matching entries via Full Text Search
         search_results = []
         try:
             fts_response = supabase.table("entries").select("raw_text, timestamp").eq("user_id", request.user_id).text_search("search_vector", request.query).limit(10).execute()
             search_results = fts_response.data or []
         except Exception:
-            pass  # Fallback silently if text search fails (e.g. empty vector or query syntax)
+            pass
 
-        # 2. Fetch last 30 general logs for general context
         recent_response = supabase.table("entries").select("raw_text, timestamp, activity, tags").eq("user_id", request.user_id).order("timestamp", { "ascending": False }).limit(30).execute()
         recent_logs = recent_response.data or []
 
-        # Combine contexts
         context_lines = []
         context_lines.append("=== MATCHING SEARCH LOGS ===")
         for log in search_results:
@@ -281,6 +268,92 @@ def ask_ai(request: AskAIRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to query AI: {str(e)}")
+
+
+@app.get("/analytics")
+def get_analytics(user_id: str):
+    if not SUPABASE_URL:
+        raise HTTPException(status_code=500, detail="Supabase client is not configured.")
+
+    try:
+        # 1. Fetch all entries for category breakdown and streaks
+        entries_response = supabase.table("entries").select("timestamp, metadata, project_id").eq("user_id", user_id).execute()
+        entries = entries_response.data or []
+
+        # Category mapping
+        categories = {}
+        for entry in entries:
+            meta = entry.get("metadata") or {}
+            category = meta.get("category")
+            if not category:
+                # Fallback to check ai_summary if metadata doesn't contain category
+                ai_sum = entry.get("ai_summary") or {}
+                if isinstance(ai_sum, str):
+                    try:
+                        ai_sum = json.loads(ai_sum)
+                    except Exception:
+                        ai_sum = {}
+                category = ai_sum.get("category", "Other") if isinstance(ai_sum, dict) else "Other"
+
+            categories[category] = categories.get(category, 0) + 1
+
+        # 2. Compute Streak (consecutive days of commits)
+        streak = 0
+        if entries:
+            # Extract date component as YYYY-MM-DD
+            unique_days = sorted(list(set([
+                datetime.strptime(entry["timestamp"][:10], "%Y-%m-%d").date()
+                for entry in entries
+            ])), reverse=True)
+
+            today = datetime.now().date()
+            yesterday = today - timedelta(days=1)
+
+            if unique_days:
+                # Check if user committed today or yesterday to preserve streak
+                if unique_days[0] == today or unique_days[0] == yesterday:
+                    streak = 1
+                    current_day = unique_days[0]
+                    # Loop backward to count consecutive days
+                    for i in range(1, len(unique_days)):
+                        diff = (current_day - unique_days[i]).days
+                        if diff == 1:
+                            streak += 1
+                            current_day = unique_days[i]
+                        elif diff > 1:
+                            break  # Streak broken
+                else:
+                    streak = 0
+
+        # 3. Fetch projects and count entries
+        projects_response = supabase.table("projects").select("id, name, color").eq("user_id", user_id).execute()
+        projects = projects_response.data or []
+
+        # Count entries per project
+        project_counts = {}
+        for entry in entries:
+            p_id = entry.get("project_id")
+            if p_id:
+                project_counts[p_id] = project_counts.get(p_id, 0) + 1
+
+        projects_list = []
+        for project in projects:
+            p_id = project["id"]
+            projects_list.append({
+                "id": p_id,
+                "name": project["name"],
+                "color": project.get("color") or "#8e8e93",
+                "count": project_counts.get(p_id, 0)
+            })
+
+        return {
+            "streak": streak,
+            "categories": categories,
+            "projects": projects_list
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch analytics: {str(e)}")
 
 
 @app.get("/")
